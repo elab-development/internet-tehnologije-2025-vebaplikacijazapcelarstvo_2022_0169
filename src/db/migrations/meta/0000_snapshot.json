@@ -1,0 +1,457 @@
+{
+  "id": "9d4baf95-dcfc-4ab8-974d-24d92102a10f",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.aktivnosti": {
+      "name": "aktivnosti",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "naziv": {
+          "name": "naziv",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "opis": {
+          "name": "opis",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tip": {
+          "name": "tip",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "datum": {
+          "name": "datum",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "uradjen": {
+          "name": "uradjen",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.dnevnici": {
+      "name": "dnevnici",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "datum": {
+          "name": "datum",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "vreme": {
+          "name": "vreme",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "slika": {
+          "name": "slika",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kolicina_meda": {
+          "name": "kolicina_meda",
+          "type": "numeric(10, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pregled": {
+          "name": "pregled",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "komentar": {
+          "name": "komentar",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kosnica_id": {
+          "name": "kosnica_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "dnevnici_kosnica_id_kosnice_id_fk": {
+          "name": "dnevnici_kosnica_id_kosnice_id_fk",
+          "tableFrom": "dnevnici",
+          "tableTo": "kosnice",
+          "columnsFrom": [
+            "kosnica_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.izvestaji": {
+      "name": "izvestaji",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "datum_od": {
+          "name": "datum_od",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "datum_do": {
+          "name": "datum_do",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "korisnik_id": {
+          "name": "korisnik_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pcelinjak_id": {
+          "name": "pcelinjak_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "izvestaji_korisnik_id_korisnici_id_fk": {
+          "name": "izvestaji_korisnik_id_korisnici_id_fk",
+          "tableFrom": "izvestaji",
+          "tableTo": "korisnici",
+          "columnsFrom": [
+            "korisnik_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "izvestaji_pcelinjak_id_pcelinjaci_id_fk": {
+          "name": "izvestaji_pcelinjak_id_pcelinjaci_id_fk",
+          "tableFrom": "izvestaji",
+          "tableTo": "pcelinjaci",
+          "columnsFrom": [
+            "pcelinjak_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.korisnici": {
+      "name": "korisnici",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "ime": {
+          "name": "ime",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "prezime": {
+          "name": "prezime",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sifra": {
+          "name": "sifra",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "uloga": {
+          "name": "uloga",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "korisnici_email_unique": {
+          "name": "korisnici_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.kosnice": {
+      "name": "kosnice",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "broj": {
+          "name": "broj",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tip": {
+          "name": "tip",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "datum": {
+          "name": "datum",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "starost_matice": {
+          "name": "starost_matice",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "br_nastavaka": {
+          "name": "br_nastavaka",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pcelinjak_id": {
+          "name": "pcelinjak_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "kosnice_pcelinjak_id_pcelinjaci_id_fk": {
+          "name": "kosnice_pcelinjak_id_pcelinjaci_id_fk",
+          "tableFrom": "kosnice",
+          "tableTo": "pcelinjaci",
+          "columnsFrom": [
+            "pcelinjak_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.notifikacije": {
+      "name": "notifikacije",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "korisnik_id": {
+          "name": "korisnik_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "aktivnost_id": {
+          "name": "aktivnost_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "notifikacije_korisnik_id_korisnici_id_fk": {
+          "name": "notifikacije_korisnik_id_korisnici_id_fk",
+          "tableFrom": "notifikacije",
+          "tableTo": "korisnici",
+          "columnsFrom": [
+            "korisnik_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "notifikacije_aktivnost_id_aktivnosti_id_fk": {
+          "name": "notifikacije_aktivnost_id_aktivnosti_id_fk",
+          "tableFrom": "notifikacije",
+          "tableTo": "aktivnosti",
+          "columnsFrom": [
+            "aktivnost_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pcelinjaci": {
+      "name": "pcelinjaci",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "naziv": {
+          "name": "naziv",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "adresa": {
+          "name": "adresa",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "geo_sirina": {
+          "name": "geo_sirina",
+          "type": "numeric(10, 8)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "geo_duzina": {
+          "name": "geo_duzina",
+          "type": "numeric(11, 8)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

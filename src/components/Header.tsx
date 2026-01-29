@@ -71,7 +71,8 @@ export default function Header({ role }: { role: UserRole | null }) {
   const items = navByRole(role);
 
   return (
-    <header className="sticky top-0 z-50 w-full">
+    <header className="sticky top-0 z-[999] w-full pointer-events-auto">
+
       {/* Glass + honey gradient, uklopljen sa hero */}
       <div className="border-b border-white/15 bg-gradient-to-r from-yellow-400/60 via-amber-400/55 to-orange-400/60 backdrop-blur-xl shadow-[0_10px_24px_rgba(0,0,0,0.10)]">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-6">

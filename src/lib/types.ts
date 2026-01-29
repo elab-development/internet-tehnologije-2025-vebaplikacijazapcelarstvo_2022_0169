@@ -3,33 +3,19 @@
 ============================================================================ */
 
 export type UUID = string;
-
-/**
- * Postgres `numeric` često dolazi kao string (zavisno od drivera/drizzle config).
- * Ako si sigurna da uvek mapiraš u number, promeni u `number`.
- */
 export type PgNumeric = string;
-
-/** ISO string format koji često koristiš u API-ju (umesto Date objekta). */
 export type ISODateString = string;
-
-/** Helper: polja koja DB defaultuje (id, created_at, datum...) */
 export type WithId = { id: UUID };
 
 /* ============================================================================
   Enums / Unions
 ============================================================================ */
 
-/** Ako u bazi nema enum, ali želiš kontrolu u FE/BE, drži union. */
-export type UserRole = "ADMIN" | "PCELAR" | "KORISNIK";
-
-/** Aktivnost tip (ako želiš strože – dopuni stvarnim vrednostima) */
+export type UserRole = "ADMIN" | "PCELAR" | "POLJOPRIVREDNIK";
 export type AktivnostTip = string;
 
 /* ============================================================================
-  DB Row types (kako izgleda red iz baze)
-  - koristi Date za timestamp
-  - koristi PgNumeric za numeric
+  DB Row types
 ============================================================================ */
 
 export interface AktivnostRow extends WithId {
@@ -41,10 +27,10 @@ export interface AktivnostRow extends WithId {
 }
 
 export interface DnevnikRow extends WithId {
-  datum: Date; // default now()
+  datum: Date;
   vreme: string | null;
   slika: string | null;
-  kolicina_meda: PgNumeric | null; // numeric(10,2)
+  kolicina_meda: PgNumeric | null;
   pregled: string | null;
   komentar: string | null;
   kosnica_id: UUID;
@@ -62,14 +48,14 @@ export interface KorisnikRow extends WithId {
   prezime: string;
   email: string;
   sifra: string;
-  uloga: string; // ili UserRole (vidi napomenu ispod)
+  uloga: string; // može i UserRole, ali ostavljamo string zbog DB realnosti
   created_at: Date;
 }
 
 export interface KosnicaRow extends WithId {
   broj: number;
   tip: string | null;
-  datum: Date; // default now()
+  datum: Date;
   starost_matice: number | null;
   br_nastavaka: number | null;
   pcelinjak_id: UUID;
@@ -83,15 +69,13 @@ export interface NotifikacijaRow extends WithId {
 export interface PcelinjakRow extends WithId {
   naziv: string;
   adresa: string | null;
-  geo_sirina: PgNumeric | null; // numeric(10,8)
-  geo_duzina: PgNumeric | null; // numeric(11,8)
+  geo_sirina: PgNumeric | null;
+  geo_duzina: PgNumeric | null;
   vlasnik_id: UUID;
 }
 
 /* ============================================================================
-  Domain / View models (za FE i biznis logiku)
-  - ovde je zgodno da numeric bude number
-  - i timestamp u ISO string (lakše kroz API)
+  Domain / View models
 ============================================================================ */
 
 export interface Aktivnost {
@@ -131,7 +115,6 @@ export interface KorisnikPublic {
   createdAt: ISODateString;
 }
 
-/** Nikad ne šalji sifru na FE */
 export interface KorisnikPrivate extends KorisnikPublic {
   sifra: string;
 }
@@ -162,9 +145,7 @@ export interface Pcelinjak {
 }
 
 /* ============================================================================
-  DTOs (za API: create/update/payload)
-  - Create: obavezna polja bez id/default
-  - Update: partial (obično PATCH)
+  DTOs
 ============================================================================ */
 
 // --- Aktivnosti ---
@@ -173,7 +154,7 @@ export type AktivnostCreateDTO = {
   opis?: string | null;
   tip?: string | null;
   datum?: ISODateString | null;
-  uradjen?: boolean; // default false
+  uradjen?: boolean;
 };
 
 export type AktivnostUpdateDTO = Partial<Omit<AktivnostCreateDTO, "naziv">> & {
@@ -188,7 +169,7 @@ export type DnevnikCreateDTO = {
   kolicinaMeda?: number | null;
   pregled?: string | null;
   komentar?: string | null;
-  datum?: ISODateString; // ako ne pošalješ, DB default
+  datum?: ISODateString;
 };
 
 export type DnevnikUpdateDTO = Partial<Omit<DnevnikCreateDTO, "kosnicaId">> & {
@@ -211,12 +192,18 @@ export type RegisterDTO = {
   prezime: string;
   email: string;
   sifra: string;
-  uloga?: UserRole; // default npr KORISNIK
+  uloga?: UserRole; // default: PCELAR
 };
 
+/**
+ * Login payload:
+ * - Front trenutno šalje { email, password }
+ * - Mi podržimo i { email, sifra } (da ne puca ako negde ostane staro)
+ */
 export type LoginDTO = {
   email: string;
-  sifra: string;
+  password?: string;
+  sifra?: string;
 };
 
 // --- Kosnice ---
@@ -255,7 +242,25 @@ export type NotifikacijaCreateDTO = {
 export type NotifikacijaUpdateDTO = Partial<NotifikacijaCreateDTO>;
 
 /* ============================================================================
-  Relation models (kad radiš join/select sa relacijama)
+  Auth shared types (BE + FE)
+============================================================================ */
+
+export type AuthUser = {
+  id: UUID;
+  email: string;
+  name: string;
+  role: UserRole;
+};
+
+export type AuthTokenClaims = {
+  sub: UUID;
+  email: string;
+  name: string;
+  role: UserRole;
+};
+
+/* ============================================================================
+  Relation models
 ============================================================================ */
 
 export type PcelinjakWithKosnice = Pcelinjak & {
@@ -271,8 +276,7 @@ export type KorisnikWithPcelinjaci = KorisnikPublic & {
 };
 
 /* ============================================================================
-  Mappers (DB Row -> Domain)
-  (koristi ih u API rutama da uvek vraćaš isti format)
+  Mappers
 ============================================================================ */
 
 export const mapAktivnostRow = (r: AktivnostRow): Aktivnost => ({

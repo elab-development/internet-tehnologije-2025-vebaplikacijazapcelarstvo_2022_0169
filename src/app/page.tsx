@@ -12,20 +12,19 @@ export default function HomePage() {
             alt="Pčelinjak"
             fill
             priority
-            className="object-cover"
+            className="object-cover pointer-events-none"
           />
 
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/35 to-black/20" />
-          <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/15 via-orange-400/10 to-amber-400/15" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/35 to-black/20 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/15 via-orange-400/10 to-amber-400/15 pointer-events-none" />
 
-          {/* Glow efekti */}
-          <div className="absolute -top-24 left-[-80px] h-80 w-80 rounded-full bg-yellow-300/30 blur-3xl" />
-          <div className="absolute bottom-[-120px] right-[-80px] h-96 w-96 rounded-full bg-orange-400/25 blur-3xl" />
+          <div className="absolute -top-24 left-[-80px] h-80 w-80 rounded-full bg-yellow-300/30 blur-3xl pointer-events-none" />
+          <div className="absolute bottom-[-120px] right-[-80px] h-96 w-96 rounded-full bg-orange-400/25 blur-3xl pointer-events-none" />
+
 
           <div className="absolute inset-0 z-10 flex items-center">
             <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-10 px-4 py-10 md:grid-cols-2 md:px-6">
-              
+
               {/* LEVA STRANA */}
               <div className="flex flex-col justify-center text-white mt-10 md:mt-14">
 
@@ -119,42 +118,42 @@ export default function HomePage() {
 
       {/* OPIS SISTEMA */}
       <section className="bg-gradient-to-b from-amber-50 via-orange-50 to-yellow-50 py-20">
-  <div className="mx-auto max-w-5xl px-6">
+        <div className="mx-auto max-w-5xl px-6">
 
-    {/* Naslov */}
-    <h2 className="text-3xl md:text-4xl font-extrabold text-orange-900 leading-snug">
-      Veb Pčelarstvo predstavlja savremeni informacioni sistem
-      za upravljanje pčelinjacima i košnicama.
-    </h2>
+          {/* Naslov */}
+          <h2 className="text-3xl md:text-4xl font-extrabold text-orange-900 leading-snug">
+            Veb Pčelarstvo predstavlja savremeni informacioni sistem
+            za upravljanje pčelinjacima i košnicama.
+          </h2>
 
-    {/* Dekorativna linija */}
-    <div className="mt-4 h-1 w-24 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500" />
+          {/* Dekorativna linija */}
+          <div className="mt-4 h-1 w-24 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500" />
 
-    {/* Prvi pasus */}
-    <p className="mt-6 text-base md:text-lg text-orange-900/80 leading-relaxed">
-      Sistem omogućava <span className="font-semibold text-orange-900">
-      sistematsko evidentiranje podataka</span> o pčelinjacima i košnicama,
-      planiranje i praćenje aktivnosti, kao i detaljno beleženje pregleda
-      kroz dnevnik rada.
-    </p>
+          {/* Prvi pasus */}
+          <p className="mt-6 text-base md:text-lg text-orange-900/80 leading-relaxed">
+            Sistem omogućava <span className="font-semibold text-orange-900">
+              sistematsko evidentiranje podataka</span> o pčelinjacima i košnicama,
+            planiranje i praćenje aktivnosti, kao i detaljno beleženje pregleda
+            kroz dnevnik rada.
+          </p>
 
-    {/* Drugi pasus */}
-    <p className="mt-4 text-base md:text-lg text-orange-900/80 leading-relaxed">
-      U zavisnosti od korisničke uloge (<span className="font-semibold">
-      pčelar, poljoprivrednik ili administrator</span>), aplikacija
-      obezbeđuje pristup odgovarajućim funkcionalnostima i jasno definisanim
-      ovlašćenjima.
-    </p>
+          {/* Drugi pasus */}
+          <p className="mt-4 text-base md:text-lg text-orange-900/80 leading-relaxed">
+            U zavisnosti od korisničke uloge (<span className="font-semibold">
+              pčelar, poljoprivrednik ili administrator</span>), aplikacija
+            obezbeđuje pristup odgovarajućim funkcionalnostima i jasno definisanim
+            ovlašćenjima.
+          </p>
 
-    {/* Treći pasus */}
-    <p className="mt-4 text-base md:text-lg text-orange-900/80 leading-relaxed">
-      Cilj sistema je unapređenje organizacije rada, smanjenje
-      administrativnih grešaka i omogućavanje jednostavnog,
-      preglednog i pouzdanog pristupa podacima u svakom trenutku.
-    </p>
+          {/* Treći pasus */}
+          <p className="mt-4 text-base md:text-lg text-orange-900/80 leading-relaxed">
+            Cilj sistema je unapređenje organizacije rada, smanjenje
+            administrativnih grešaka i omogućavanje jednostavnog,
+            preglednog i pouzdanog pristupa podacima u svakom trenutku.
+          </p>
 
-  </div>
-</section>
+        </div>
+      </section>
 
     </main>
   );

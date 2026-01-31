@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { AUTH_COOKIE, cookieOpts, signAuthToken } from "@/lib/auth";
-import type { AuthUser, RegisterDTO, UserRole } from "@/lib/types";
+import type { AuthUser, RegisterDTO, UserRole } from "@/shared/types";
 
 export async function POST(req: Request) {
   try {

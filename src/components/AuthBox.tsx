@@ -4,7 +4,7 @@ import { useState } from "react";
 import AuthInput from "./AuthInput";
 import AuthButton from "./AuthButton";
 import { useRouter } from "next/navigation";
-import type { AuthUser, RegisterDTO, LoginDTO } from "@/lib/types";
+import type { AuthUser, RegisterDTO, LoginDTO } from "@/shared/types";
 
 export default function AuthBox({
     defaultMode = "login",
@@ -85,9 +85,9 @@ export default function AuthBox({
 
     return (
         <div className="relative w-full max-w-md bg-white rounded-xl shadow-lg p-8 text-black z-50">
-          <div className="absolute -top-12 -right-12 text-8xl rotate-12 drop-shadow-lg">
-  🐝
-</div>
+            <div className="absolute -top-12 -right-12 text-8xl rotate-12 drop-shadow-lg">
+                🐝
+            </div>
 
 
 

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
-import type { UserRole } from "@/lib/types";
+import type { UserRole } from "@/shared/types";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 

@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import { getRoleFromCookies } from "@/lib/auth";
+import { AuthProvider } from "@/components/AuthProvider";
 
 export const metadata: Metadata = {
   title: "Veb Pčelarstvo",
@@ -18,8 +19,10 @@ export default async function RootLayout({
   return (
     <html lang="sr">
       <body className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50 to-yellow-50">
+
         <Header role={role} />
         {children}
+
       </body>
     </html>
   );

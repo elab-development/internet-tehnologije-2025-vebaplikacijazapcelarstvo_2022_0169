@@ -1,6 +1,6 @@
 import * as jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
-import type { AuthTokenClaims, AuthUser, UserRole } from "@/lib/types";
+import type { AuthTokenClaims, AuthUser, UserRole } from "@/shared/types";
 
 export const AUTH_COOKIE = "auth";
 const JWT_SECRET = process.env.JWT_SECRET as string;

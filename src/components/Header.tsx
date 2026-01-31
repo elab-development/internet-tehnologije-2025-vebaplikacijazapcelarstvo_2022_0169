@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import type { UserRole } from "@/lib/types";
+import type { UserRole } from "@/shared/types";
 
 type NavItem = { label: string; href: string };
 
@@ -13,7 +13,7 @@ function navByRole(role: UserRole | null): NavItem[] {
   switch (role) {
     case "PCELAR":
       return [
-        { label: "Moj pčelinjak", href: "/pcelinjak" },
+        { label: "Moj pčelinjak", href: "/pcelinjaci" },
         { label: "Aktivnosti", href: "/aktivnosti" },
         { label: "Moj dnevnik", href: "/dnevnik" },
         { label: "Profil", href: "/profil" },

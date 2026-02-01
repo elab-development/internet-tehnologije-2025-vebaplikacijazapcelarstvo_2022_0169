@@ -145,7 +145,7 @@ export default function Page() {
 
                         <button
                             onClick={openAdd}
-                            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-yellow-500 to-orange-500 px-5 py-3 text-sm font-bold text-white shadow-md hover:opacity-95 active:scale-[0.99]"
+                            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 px-6 py-3 text-sm font-bold text-orange-900 shadow-md hover:opacity-95 active:scale-[0.99]"
                         >
                             <span className="text-lg leading-none">＋</span>
                             Dodaj
@@ -157,10 +157,46 @@ export default function Page() {
 
                 {loading ? (
                     <div className="rounded-2xl bg-white/70 p-6 text-gray-700">Učitavanje...</div>
-                ) : (
-                    <ListaPcelinjaka pcelinjaci={filtered} onEdit={openEdit} onDelete={handleDelete} />
+                ) :
+                    //     <ListaPcelinjaka pcelinjaci={filtered} onEdit={openEdit} onDelete={handleDelete} />
 
-                )}
+                    // )}
+                    filtered.length === 0 ? (
+                        <div className="rounded-3xl border border-yellow-200 bg-white/80 p-8 text-center shadow-sm">
+                            <div className="mb-3 text-4xl">🐝</div>
+                            <h3 className="text-lg font-extrabold text-yellow-900">
+                                Još uvek nemaš nijedan pčelinjak
+                            </h3>
+                            <p className="mt-2 text-sm text-gray-600">
+                                Klikni na dugme <span className="font-semibold">„Dodaj“</span> i
+                                napravi svoj prvi pčelinjak.
+                            </p>
+
+                            <button
+                                onClick={openAdd}
+                                className="
+        mt-5 inline-flex items-center gap-2
+        rounded-full
+        bg-gradient-to-r from-yellow-400 to-orange-500
+        px-6 py-3
+        text-sm font-extrabold text-orange-900
+        border-2 border-orange-400
+        shadow-md
+        hover:scale-105 transition
+      "
+                            >
+                                <span className="text-lg">＋</span>
+                                Dodaj prvi pčelinjak
+                            </button>
+                        </div>
+                    ) : (
+                        <ListaPcelinjaka
+                            pcelinjaci={filtered}
+                            onEdit={openEdit}
+                            onDelete={handleDelete}
+                        />
+                    )}
+
             </div>
             {modal.open && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { pcelinjaci } from "@/db/schema";
-import { cookies } from "next/headers";
-import { AUTH_COOKIE, verifyAuthToken } from "@/lib/auth";
+import { eq } from "drizzle-orm";
+import { getAuthUserFromCookies } from "@/lib/auth";
 
 export async function GET() {
-    const rows = await db.select().from(pcelinjaci);
+    const user = await getAuthUserFromCookies();
+    if (!user) {
+        return NextResponse.json({ error: "Niste prijavljeni" }, { status: 401 });
+    }
+
+    const rows = await db
+        .select()
+        .from(pcelinjaci)
+        .where(eq(pcelinjaci.vlasnikId, user.id));
 
     const out = rows.map((r) => ({
         id: r.id,
@@ -19,6 +27,11 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+    const user = await getAuthUserFromCookies();
+    if (!user) {
+        return NextResponse.json({ error: "Niste prijavljeni" }, { status: 401 });
+    }
+
     const body = await req.json();
 
     const naziv = String(body.naziv ?? "").trim();
@@ -30,24 +43,12 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Naziv je obavezan" }, { status: 400 });
     }
 
-    // 🔽🔽🔽 DODATO – SAMO OVO 🔽🔽🔽
-    const cookieStore = await cookies();
-    const token = cookieStore.get(AUTH_COOKIE)?.value;
-
-    if (!token) {
-        return NextResponse.json({ error: "Niste prijavljeni" }, { status: 401 });
-    }
-
-    const payload = verifyAuthToken(token);
-    const userId = payload.sub;
-    // 🔼🔼🔼 KRAJ DODATKA 🔼🔼🔼
-
     await db.insert(pcelinjaci).values({
         naziv,
         adresa: adresa || null,
         geoSirina: geoSirina == null || Number.isNaN(geoSirina) ? null : String(geoSirina),
         geoDuzina: geoDuzina == null || Number.isNaN(geoDuzina) ? null : String(geoDuzina),
-        vlasnikId: userId, // ✅ OVO JE JEDINA BITNA STAVKA
+        vlasnikId: user.id,
     });
 
     return NextResponse.json({ ok: true }, { status: 201 });

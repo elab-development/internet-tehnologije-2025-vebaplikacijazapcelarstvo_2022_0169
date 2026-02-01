@@ -17,8 +17,8 @@ export default async function RootLayout({
   const role = await getRoleFromCookies();
 
   return (
-    <html lang="sr">
-      <body className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50 to-yellow-50">
+    <html lang="sr" suppressHydrationWarning>
+      <body suppressHydrationWarning className="min-h-screen bg-gradient-to-b from-amber-50 via-orange-50 to-yellow-50">
 
         <Header role={role} />
         {children}

@@ -36,11 +36,11 @@ export default function AuthBox({
                 prezime: lastName,
                 email,
                 sifra: password,
-                uloga: "PCELAR", // kasnije možeš biranje uloge
+                uloga: "PCELAR",
             }
             : {
                 email,
-                password, // ✅ backend podržava password (i sifra kao fallback)
+                password,
             };
 
         try {
@@ -68,11 +68,11 @@ export default function AuthBox({
 
             const user = data as AuthUser;
 
-            // redirect po ulozi
+
             let target = "/";
 
             if (user.role === "ADMIN") target = "/admin/aktivnosti";
-            if (user.role === "PCELAR") target = "/pcelinjak";
+            if (user.role === "PCELAR") target = "/pcelinjaci";
             if (user.role === "POLJOPRIVREDNIK") target = "/aktivnosti";
 
             router.replace(target);

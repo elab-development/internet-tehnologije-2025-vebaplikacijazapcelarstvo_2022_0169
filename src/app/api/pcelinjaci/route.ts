@@ -1,41 +1,54 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { pcelinjaci } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { AUTH_COOKIE, verifyAuthToken } from "@/lib/auth";
-import { mapPcelinjakRow } from "@/shared/types";
-
 
 export async function GET() {
-    try {
-        // 1️⃣ Uzmi token iz cookie-ja
-        const cookieStore = await cookies();
-        const token = cookieStore.get(AUTH_COOKIE)?.value;
-        if (!token) {
-            return NextResponse.json({ error: "Niste prijavljeni" }, { status: 401 });
-        }
+    const rows = await db.select().from(pcelinjaci);
 
-        // 2️⃣ Verifikuj token
-        const payload = await verifyAuthToken(token);
-        if (!payload?.sub) {
-            return NextResponse.json({ error: "Nevažeći token" }, { status: 401 });
-        }
+    const out = rows.map((r) => ({
+        id: r.id,
+        naziv: r.naziv,
+        adresa: r.adresa ?? "",
+        geoSirina: r.geoSirina == null ? null : Number(r.geoSirina),
+        geoDuzina: r.geoDuzina == null ? null : Number(r.geoDuzina),
+    }));
 
-        const userId = payload.sub;
+    return NextResponse.json(out);
+}
 
-        // 3️⃣ Uzmi pčelinjake tog korisnika
-        const rows = await db
-            .select()
-            .from(pcelinjaci)
-            .where(eq(pcelinjaci.vlasnikId, userId));
+export async function POST(req: Request) {
+    const body = await req.json();
 
-        // 4️⃣ Mapiranje DB → Domain model
-        //const result = rows.map(mapPcelinjakRow);
+    const naziv = String(body.naziv ?? "").trim();
+    const adresa = String(body.adresa ?? "").trim();
+    const geoSirina = body.geoSirina == null ? null : Number(body.geoSirina);
+    const geoDuzina = body.geoDuzina == null ? null : Number(body.geoDuzina);
 
-        return NextResponse.json(rows);
-    } catch (err) {
-        console.error("GET /api/pcelinjaci error:", err);
-        return NextResponse.json({ error: "Greška na serveru" }, { status: 500 });
+    if (!naziv) {
+        return NextResponse.json({ error: "Naziv je obavezan" }, { status: 400 });
     }
+
+    // 🔽🔽🔽 DODATO – SAMO OVO 🔽🔽🔽
+    const cookieStore = await cookies();
+    const token = cookieStore.get(AUTH_COOKIE)?.value;
+
+    if (!token) {
+        return NextResponse.json({ error: "Niste prijavljeni" }, { status: 401 });
+    }
+
+    const payload = verifyAuthToken(token);
+    const userId = payload.sub;
+    // 🔼🔼🔼 KRAJ DODATKA 🔼🔼🔼
+
+    await db.insert(pcelinjaci).values({
+        naziv,
+        adresa: adresa || null,
+        geoSirina: geoSirina == null || Number.isNaN(geoSirina) ? null : String(geoSirina),
+        geoDuzina: geoDuzina == null || Number.isNaN(geoDuzina) ? null : String(geoDuzina),
+        vlasnikId: userId, // ✅ OVO JE JEDINA BITNA STAVKA
+    });
+
+    return NextResponse.json({ ok: true }, { status: 201 });
 }

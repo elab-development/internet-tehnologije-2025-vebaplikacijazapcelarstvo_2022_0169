@@ -23,7 +23,7 @@ export default function ListaPcelinjaka({
     return (
         <div className="space-y-6">
             {pcelinjaci.map((p) => (
-                <Link key={p.id} href={`/pcelinjak/${p.id}`} className="block">
+                <Link key={p.id} href={`/pcelinjaci/${p.id}`} className="block">
                     <PcelinjakCard p={p} onEdit={onEdit} onDelete={onDelete} />
                 </Link>
             ))}

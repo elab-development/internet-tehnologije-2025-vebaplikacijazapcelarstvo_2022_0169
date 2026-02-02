@@ -126,7 +126,7 @@ export default function Page() {
         <main
             className="min-h-screen px-4 py-8"
             style={{
-                backgroundImage: "url(/bg-bee-blur.svg)",
+                backgroundImage: "url(/pozadina.png)",
                 backgroundSize: "cover",
                 backgroundPosition: "center",
             }}

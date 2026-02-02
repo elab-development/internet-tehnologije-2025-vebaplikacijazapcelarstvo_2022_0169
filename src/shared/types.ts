@@ -123,7 +123,7 @@ export interface Kosnica {
   id: UUID;
   broj: number;
   tip?: string | null;
-  datum: ISODateString;
+  datum: ISODateString | null ;
   starostMatice?: number | null;
   brNastavaka?: number | null;
   pcelinjakId: UUID;

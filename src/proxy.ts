@@ -42,7 +42,7 @@ export function proxy(req: NextRequest) {
 
   // 3) Štitimo SAMO privatne rute (ostalo pusti)
   const isProtected =
-    pathname.startsWith("/pcelinjak") ||
+    pathname.startsWith("/pcelinjaci") ||
     pathname.startsWith("/aktivnosti") ||
     pathname.startsWith("/dnevnik") ||
     pathname.startsWith("/profil") ||

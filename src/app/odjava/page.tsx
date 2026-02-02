@@ -1,17 +1,31 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 export default function OdjavaPage() {
   const router = useRouter();
+  const ran = useRef(false);
 
   useEffect(() => {
-    (async () => {
-      await fetch("/api/auth/logout", { method: "POST" });
+    if (ran.current) return;     
+    ran.current = true;
 
-      router.replace("/");   // vrati na početnu
-      router.refresh();      // natera server komponente (Header) da pročitaju nove cookies
+    (async () => {
+      try {
+        const res = await fetch("/api/auth/logout", {
+          method: "POST",
+          cache: "no-store",
+        });
+
+        
+      } catch (e) {
+      
+        console.error("Logout fetch error:", e);
+      } finally {
+        router.replace("/");
+        router.refresh();
+      }
     })();
   }, [router]);
 
@@ -21,4 +35,3 @@ export default function OdjavaPage() {
     </main>
   );
 }
-

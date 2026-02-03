@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 type Ctx = { params: Promise<{ id: string }> };
 
 export async function PUT(req: Request, ctx: Ctx) {
-    const { id } = await ctx.params; // ✅ mora await
+    const { id } = await ctx.params; 
 
     const body = await req.json();
 
@@ -33,7 +33,7 @@ export async function PUT(req: Request, ctx: Ctx) {
 }
 
 export async function DELETE(_req: Request, ctx: Ctx) {
-    const { id } = await ctx.params; // ✅ mora await
+    const { id } = await ctx.params;
 
     await db.delete(kosnice).where(eq(kosnice.pcelinjakId, id));
     await db.delete(pcelinjaci).where(eq(pcelinjaci.id, id));

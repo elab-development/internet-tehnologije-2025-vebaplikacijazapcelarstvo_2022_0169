@@ -18,7 +18,7 @@ function toKosnicaFromApiRow(row: any, pcelinjakId: string): Kosnica {
     const datumValue = row.datum ?? null;
     const datumIso =
         datumValue == null
-            ? "" // ✅ ako ti je Kosnica.datum string u types.ts
+            ? "" 
             : typeof datumValue === "string"
                 ? datumValue
                 : new Date(datumValue).toISOString();
@@ -47,7 +47,7 @@ export default function Page() {
     const openEdit = (id: UUID) => setModal({ open: true, mode: "edit", editId: id });
     const close = () => setModal({ open: false });
 
-    // ✅ ovo je ono što puni formu kad klikneš olovku
+    
     const editItem =
         modal.open && modal.mode === "edit"
             ? kosnice.find((k) => k.id === modal.editId)
@@ -74,7 +74,7 @@ export default function Page() {
     useEffect(() => {
         if (!pcelinjakId) return;
         loadKosnice();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        
     }, [pcelinjakId]);
 
     const filtered = useMemo(() => {
@@ -165,7 +165,7 @@ return (
         }}
     >
         <div className="mx-auto max-w-4xl">
-            {/* HEADER u page.tsx */}
+            
             <div className="mb-6 rounded-3xl border border-yellow-200/70 bg-white/70 p-6 shadow-sm backdrop-blur">
                 <div className="flex items-center justify-between gap-4">
                     <div>
@@ -187,7 +187,7 @@ return (
                 </div>
             </div>
 
-            {/* Search kao poseban blok */}
+           
             <KosnicaSearch value={query} onChange={setQuery} />
 
             {loading ? (

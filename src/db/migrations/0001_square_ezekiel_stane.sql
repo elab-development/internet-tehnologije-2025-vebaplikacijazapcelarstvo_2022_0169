@@ -1,2 +1,2 @@
-ALTER TABLE "pcelinjaci" ADD COLUMN "vlasnik_id" uuid NOT NULL;--> statement-breakpoint
+ALTER TABLE "pcelinjaci" ADD COLUMN "vlasnik_id" uuid NOT NULL;
 ALTER TABLE "pcelinjaci" ADD CONSTRAINT "pcelinjaci_vlasnik_id_korisnici_id_fk" FOREIGN KEY ("vlasnik_id") REFERENCES "public"."korisnici"("id") ON DELETE cascade ON UPDATE no action;

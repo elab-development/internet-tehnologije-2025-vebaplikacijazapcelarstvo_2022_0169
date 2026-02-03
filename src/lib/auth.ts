@@ -74,3 +74,25 @@ export async function getAuthUserFromCookies(): Promise<AuthUser | null> {
   }
 }
 
+export class AuthError extends Error {
+  status: 401 | 403;
+
+  constructor(status: 401 | 403, message: string) {
+    super(message);
+    this.status = status;
+  }
+}
+
+
+export async function requireAuth(
+  allowedRoles?: UserRole[]
+): Promise<AuthUser> {
+  const user = await getAuthUserFromCookies();
+  if (!user) throw new AuthError(401, "Niste prijavljeni");
+
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    throw new AuthError(403, "Nemate pravo pristupa");
+  }
+
+  return user;
+}

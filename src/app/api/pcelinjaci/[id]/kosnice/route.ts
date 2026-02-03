@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { db } from "@/db";
-import { kosnice } from "@/db/schema";
-import { eq, asc } from "drizzle-orm";
+import { kosnice, pcelinjaci } from "@/db/schema";
+import { eq, asc, and } from "drizzle-orm";
+import { requireAuth, AuthError } from "@/lib/auth";
 
 import type { KosnicaCreateDTO } from "@/shared/types";
 
@@ -26,9 +27,28 @@ function toDateOrDefault(v: unknown): Date {
   return Number.isNaN(d.getTime()) ? new Date() : d;
 }
 
+async function assertOwnsPcelinjak(pcelinjakId: string, userId: string) {
+  const rows = await db
+    .select({ id: pcelinjaci.id })
+    .from(pcelinjaci)
+    .where(and(eq(pcelinjaci.id, pcelinjakId), eq(pcelinjaci.vlasnikId, userId)))
+    .limit(1);
+
+  return rows.length > 0;
+}
+
 export async function GET(_req: NextRequest, ctx: Ctx) {
   try {
+    const user = await requireAuth(["PCELAR"]); 
     const { id: pcelinjakId } = await ctx.params;
+
+    const ok = await assertOwnsPcelinjak(pcelinjakId, user.id);
+    if (!ok) {
+      return NextResponse.json(
+        { error: "Pčelinjak nije pronađen ili nemate pravo pristupa" },
+        { status: 404 }
+      );
+    }
 
     const rows = await db
       .select()
@@ -37,7 +57,10 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
       .orderBy(asc(kosnice.broj));
 
     return NextResponse.json(rows);
-  } catch (e) {
+  } catch (e: any) {
+    if (e instanceof AuthError) {
+      return NextResponse.json({ error: e.message }, { status: e.status });
+    }
     console.error("GET kosnice error:", e);
     return NextResponse.json(
       { error: "Greška pri učitavanju košnica" },
@@ -48,7 +71,17 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
 
 export async function POST(req: NextRequest, ctx: Ctx) {
   try {
+    const user = await requireAuth(["PCELAR"]); 
     const { id: pcelinjakId } = await ctx.params;
+
+    const ok = await assertOwnsPcelinjak(pcelinjakId, user.id);
+    if (!ok) {
+      return NextResponse.json(
+        { error: "Pčelinjak nije pronađen ili nemate pravo pristupa" },
+        { status: 404 }
+      );
+    }
+
     const body = (await req.json()) as Partial<KosnicaCreateDTO>;
 
     const broj = Number(body.broj);
@@ -68,9 +101,10 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     const exists = await db
       .select({ broj: kosnice.broj })
       .from(kosnice)
-      .where(eq(kosnice.pcelinjakId, pcelinjakId));
+      .where(and(eq(kosnice.pcelinjakId, pcelinjakId), eq(kosnice.broj, broj)))
+      .limit(1);
 
-    if (exists.some((k) => k.broj === broj)) {
+    if (exists.length > 0) {
       return NextResponse.json(
         { error: "Košnica sa tim brojem već postoji u ovom pčelinjaku" },
         { status: 400 }
@@ -87,7 +121,10 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     });
 
     return NextResponse.json({ ok: true }, { status: 201 });
-  } catch (e) {
+  } catch (e: any) {
+    if (e instanceof AuthError) {
+      return NextResponse.json({ error: e.message }, { status: e.status });
+    }
     console.error("POST kosnice error:", e);
     return NextResponse.json(
       { error: "Greška pri kreiranju košnice" },
@@ -95,4 +132,5 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     );
   }
 }
+
 

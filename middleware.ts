@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import type { UserRole } from "@/shared/types";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
+const AUTH_COOKIE = "auth";
 
 function getRoleFromToken(token: string): UserRole | null {
   try {
@@ -16,31 +17,50 @@ function getRoleFromToken(token: string): UserRole | null {
   }
 }
 
-export function proxy(req: NextRequest) {
+export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // 0) Nikad ne diraj Next interne fajlove / statiku / slike / favicon
+  
   if (
     pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon.ico") ||
-    pathname.startsWith("/robots.txt") ||
-    pathname.startsWith("/sitemap.xml") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml" ||
     pathname.match(/\.(css|js|map|png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf)$/)
   ) {
     return NextResponse.next();
   }
 
-  // 1) Nikad ne diraj API rute (login/register moraju da rade bez auth)
+  
+  const token = req.cookies.get(AUTH_COOKIE)?.value;
+  const role = token ? getRoleFromToken(token) : null;
+
+
   if (pathname.startsWith("/api")) {
+    
+    if (pathname === "/api/auth/login" || pathname === "/api/auth/register") {
+      return NextResponse.next();
+    }
+
+    
+    if (!token || !role) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    
+    if (pathname.startsWith("/api/admin") && role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     return NextResponse.next();
   }
 
-  // 2) Javne stranice
+  
   if (pathname === "/" || pathname.startsWith("/prijava") || pathname.startsWith("/registracija")) {
     return NextResponse.next();
   }
 
-  // 3) Štitimo SAMO privatne rute (ostalo pusti)
+  
   const isProtected =
     pathname.startsWith("/pcelinjaci") ||
     pathname.startsWith("/aktivnosti") ||
@@ -48,25 +68,21 @@ export function proxy(req: NextRequest) {
     pathname.startsWith("/profil") ||
     pathname.startsWith("/admin");
 
-  if (!isProtected) {
-    return NextResponse.next();
+  if (!isProtected) return NextResponse.next();
+
+  
+  if (!token || !role) {
+    return NextResponse.redirect(new URL("/", req.url)); 
   }
 
-  // 4) Provera auth cookie
-  const token = req.cookies.get("auth")?.value;
-  if (!token) {
-    return NextResponse.redirect(new URL("/", req.url));
-  }
 
-  const role = getRoleFromToken(token);
-  if (!role) {
-    return NextResponse.redirect(new URL("/", req.url));
-  }
-
-  // 5) Admin-only
   if (pathname.startsWith("/admin") && role !== "ADMIN") {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
   return NextResponse.next();
 }
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+};

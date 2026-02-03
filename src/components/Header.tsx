@@ -20,8 +20,8 @@ function navByRole(role: UserRole | null): NavItem[] {
       ];
     case "ADMIN":
       return [
-        { label: "Aktivnosti", href: "/admin/aktivnosti" },
-        { label: "Profili", href: "/admin/korisnici" },
+        { label: "Aktivnosti", href: "/aktivnosti" },
+        { label: "Upravljanje korisnicima", href: "/korisnici" },
         { label: "Profil", href: "/profil" },
       ];
     case "POLJOPRIVREDNIK":
@@ -73,10 +73,10 @@ export default function Header({ role }: { role: UserRole | null }) {
   return (
     <header className="sticky top-0 z-[999] w-full pointer-events-auto">
 
-      
+
       <div className="border-b border-white/15 bg-gradient-to-r from-yellow-400/60 via-amber-400/55 to-orange-400/60 backdrop-blur-xl shadow-[0_10px_24px_rgba(0,0,0,0.10)]">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-6">
-          
+
           <Link href="/" className="flex items-center gap-3">
             <div className="relative h-12 w-12 md:h-14 md:w-14">
               <Image
@@ -105,7 +105,7 @@ export default function Header({ role }: { role: UserRole | null }) {
             </div>
           </Link>
 
-          
+
           {!role && isLanding ? (
             <div className="flex items-center gap-3">
               <Link

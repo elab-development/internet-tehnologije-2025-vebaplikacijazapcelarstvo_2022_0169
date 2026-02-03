@@ -71,7 +71,7 @@ export default function AuthBox({
 
             let target = "/";
 
-            if (user.role === "ADMIN") target = "/admin/aktivnosti";
+            if (user.role === "ADMIN") target = "/aktivnosti";
             if (user.role === "PCELAR") target = "/pcelinjaci";
             if (user.role === "POLJOPRIVREDNIK") target = "/aktivnosti";
 

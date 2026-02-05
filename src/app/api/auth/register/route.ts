@@ -34,12 +34,9 @@ export async function POST(req: Request) {
       uloga: role,
     });
 
-    const token = signAuthToken({ sub: id, email, name: ime, role });
 
-    const user: AuthUser = { id, email, name: ime, role };
-    const res = NextResponse.json(user);
-    res.cookies.set(AUTH_COOKIE, token, cookieOpts());
-    return res;
+    return NextResponse.json({ message: "Uspjesno ste se registrovali" }, { status: 200 });
+
   } catch (err) {
     console.error("Register error:", err);
     return NextResponse.json({ error: "Server trenutno nije dostupan" }, { status: 500 });

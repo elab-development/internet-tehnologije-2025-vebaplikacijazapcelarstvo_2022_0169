@@ -12,6 +12,8 @@ export default function AuthBox({
     defaultMode?: "login" | "register";
 }) {
     const router = useRouter();
+    const [role, setRole] = useState<"PCELAR" | "POLJOPRIVREDNIK">("PCELAR");
+
     const [isRegister, setIsRegister] = useState(defaultMode === "register");
 
     const [name, setName] = useState("");
@@ -36,7 +38,7 @@ export default function AuthBox({
                 prezime: lastName,
                 email,
                 sifra: password,
-                uloga: "PCELAR",
+                uloga: role,
             }
             : {
                 email,
@@ -101,6 +103,21 @@ export default function AuthBox({
                     <>
                         <AuthInput label="Ime" value={name} onChange={setName} />
                         <AuthInput label="Prezime" value={lastName} onChange={setLastName} />
+                        <div className="flex flex-col gap-1">
+                            <label className="text-sm font-medium text-gray-700">
+                                Uloga korisnika
+                            </label>
+                            <select
+                                value={role}
+                                onChange={(e) =>
+                                    setRole(e.target.value as "PCELAR" | "POLJOPRIVREDNIK")
+                                }
+                                className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                            >
+                                <option value="PCELAR">Pčelar</option>
+                                <option value="POLJOPRIVREDNIK">Poljoprivrednik</option>
+                            </select>
+                        </div>
                     </>
                 )}
 

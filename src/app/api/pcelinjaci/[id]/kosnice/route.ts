@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { db } from "@/db";
 import { kosnice, pcelinjaci } from "@/db/schema";
 import { eq, asc, and } from "drizzle-orm";
-import { requireAuth, AuthError } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 
 import type { KosnicaCreateDTO } from "@/shared/types";
 
@@ -38,8 +38,13 @@ async function assertOwnsPcelinjak(pcelinjakId: string, userId: string) {
 }
 
 export async function GET(_req: NextRequest, ctx: Ctx) {
+  const auth = await requireAuth(["PCELAR"]);
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.message }, { status: auth.status });
+  }
+
   try {
-    const user = await requireAuth(["PCELAR"]); 
+    const user = auth.user;
     const { id: pcelinjakId } = await ctx.params;
 
     const ok = await assertOwnsPcelinjak(pcelinjakId, user.id);
@@ -58,9 +63,6 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
 
     return NextResponse.json(rows);
   } catch (e: any) {
-    if (e instanceof AuthError) {
-      return NextResponse.json({ error: e.message }, { status: e.status });
-    }
     console.error("GET kosnice error:", e);
     return NextResponse.json(
       { error: "Greška pri učitavanju košnica" },
@@ -70,8 +72,13 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
 }
 
 export async function POST(req: NextRequest, ctx: Ctx) {
+  const auth = await requireAuth(["PCELAR"]);
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.message }, { status: auth.status });
+  }
+
   try {
-    const user = await requireAuth(["PCELAR"]); 
+    const user = auth.user;
     const { id: pcelinjakId } = await ctx.params;
 
     const ok = await assertOwnsPcelinjak(pcelinjakId, user.id);
@@ -97,7 +104,6 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     const brNastavaka = toNumberOrNull(body.brNastavaka);
     const datum = toDateOrDefault(body.datum);
 
-    
     const exists = await db
       .select({ broj: kosnice.broj })
       .from(kosnice)
@@ -122,9 +128,6 @@ export async function POST(req: NextRequest, ctx: Ctx) {
 
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (e: any) {
-    if (e instanceof AuthError) {
-      return NextResponse.json({ error: e.message }, { status: e.status });
-    }
     console.error("POST kosnice error:", e);
     return NextResponse.json(
       { error: "Greška pri kreiranju košnice" },
@@ -132,5 +135,3 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     );
   }
 }
-
-

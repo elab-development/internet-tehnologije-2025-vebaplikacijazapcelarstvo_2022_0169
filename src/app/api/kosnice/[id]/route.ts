@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { db } from "@/db";
 import { kosnice, pcelinjaci } from "@/db/schema";
 import { eq, and, ne } from "drizzle-orm";
-import { requireAuth, AuthError } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 
 import type { KosnicaUpdateDTO } from "@/shared/types";
 
@@ -38,8 +38,13 @@ async function assertOwnsPcelinjak(pcelinjakId: string, userId: string) {
 }
 
 export async function PUT(req: NextRequest, ctx: Ctx) {
+  const auth = await requireAuth(["PCELAR"]);
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.message }, { status: auth.status });
+  }
+
   try {
-    const user = await requireAuth(["PCELAR"]); 
+    const user = auth.user;
     const { id: kosnicaId } = await ctx.params;
     const body = (await req.json()) as KosnicaUpdateDTO;
 
@@ -54,7 +59,6 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
       return NextResponse.json({ error: "Košnica ne postoji" }, { status: 404 });
     }
 
-   
     const ok = await assertOwnsPcelinjak(cur.pcelinjakId, user.id);
     if (!ok) {
       return NextResponse.json(
@@ -74,7 +78,6 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
         );
       }
 
-      
       const dup = await db
         .select({ id: kosnice.id })
         .from(kosnice)
@@ -115,13 +118,9 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
       return NextResponse.json({ ok: true });
     }
 
-    
     await db.update(kosnice).set(patch).where(eq(kosnice.id, kosnicaId));
     return NextResponse.json({ ok: true });
   } catch (e: any) {
-    if (e instanceof AuthError) {
-      return NextResponse.json({ error: e.message }, { status: e.status });
-    }
     console.error("PUT /api/kosnice/[id] error:", e);
     return NextResponse.json(
       { error: "Greška pri izmeni košnice" },
@@ -131,11 +130,15 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
 }
 
 export async function DELETE(_req: NextRequest, ctx: Ctx) {
+  const auth = await requireAuth(["PCELAR"]);
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.message }, { status: auth.status });
+  }
+
   try {
-    const user = await requireAuth(["PCELAR"]); 
+    const user = auth.user;
     const { id: kosnicaId } = await ctx.params;
 
-   
     const existing = await db
       .select({ id: kosnice.id, pcelinjakId: kosnice.pcelinjakId })
       .from(kosnice)
@@ -155,13 +158,9 @@ export async function DELETE(_req: NextRequest, ctx: Ctx) {
       );
     }
 
-  
     await db.delete(kosnice).where(eq(kosnice.id, kosnicaId));
     return NextResponse.json({ ok: true });
   } catch (e: any) {
-    if (e instanceof AuthError) {
-      return NextResponse.json({ error: e.message }, { status: e.status });
-    }
     console.error("DELETE /api/kosnice/[id] error:", e);
     return NextResponse.json(
       { error: "Greška pri brisanju košnice" },

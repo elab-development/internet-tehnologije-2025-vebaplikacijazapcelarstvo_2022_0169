@@ -9,12 +9,12 @@ if (!JWT_SECRET) {
   throw new Error("Missing JWT_SECRET in env file");
 }
 
-/** Potpisivanje tokena (7 dana) */
+
 export function signAuthToken(claims: AuthTokenClaims) {
   return jwt.sign(claims, JWT_SECRET, { algorithm: "HS256", expiresIn: "7d" });
 }
 
-/** Verifikacija tokena + validacija obaveznih polja */
+
 export function verifyAuthToken(token: string): AuthTokenClaims {
   const payload = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload & Partial<AuthTokenClaims>;
 
@@ -30,14 +30,14 @@ export function verifyAuthToken(token: string): AuthTokenClaims {
   };
 }
 
-/** Standardne cookie opcije */
+
 export function cookieOpts() {
   return {
     httpOnly: true,
     sameSite: "lax" as const,
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 60 * 60 * 24 * 7, // 7 dana
+    maxAge: 60 * 60 * 24 * 7, 
   };
 }
 
@@ -74,25 +74,22 @@ export async function getAuthUserFromCookies(): Promise<AuthUser | null> {
   }
 }
 
-export class AuthError extends Error {
-  status: 401 | 403;
-
-  constructor(status: 401 | 403, message: string) {
-    super(message);
-    this.status = status;
-  }
-}
-
+type AuthResult =
+  | { ok: true; user: AuthUser }
+  | { ok: false; status: 401 | 403; message: string };
 
 export async function requireAuth(
   allowedRoles?: UserRole[]
-): Promise<AuthUser> {
+): Promise<AuthResult> {
   const user = await getAuthUserFromCookies();
-  if (!user) throw new AuthError(401, "Niste prijavljeni");
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    throw new AuthError(403, "Nemate pravo pristupa");
+  if (!user) {
+    return { ok: false, status: 401, message: "Niste prijavljeni" };
   }
 
-  return user;
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return { ok: false, status: 403, message: "Nemate pravo pristupa" };
+  }
+
+  return { ok: true, user };
 }

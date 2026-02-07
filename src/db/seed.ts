@@ -1,6 +1,18 @@
 import { db } from "./index";
-import { korisnici, pcelinjaci, kosnice, dnevnici, aktivnosti, notifikacije, izvestaji } from "./schema";
+import {
+    korisnici,
+    pcelinjaci,
+    kosnice,
+    dnevnici,
+    aktivnosti,
+    korisnikAktivnosti,
+    izvestaji,
+} from "./schema";
 import bcrypt from "bcrypt";
+
+/* ============================================================================
+  KONSTANTNI ID-jevi
+============================================================================ */
 
 const KORISNIK_IDS = {
     ADMIN: "00000000-0000-0000-0000-000000000001",
@@ -10,161 +22,168 @@ const KORISNIK_IDS = {
 
 const PCELINJAK_IDS = {
     FRUSKA_GORA: "00000000-0000-0000-0000-000000000101",
-    AVALA: "00000000-0000-0000-0000-000000000102",
 } as const;
 
 const KOSNICA_IDS = {
     K1: "00000000-0000-0000-0000-000000000201",
-    K2: "00000000-0000-0000-0000-000000000202",
-    K3: "00000000-0000-0000-0000-000000000203",
 } as const;
 
 const AKTIVNOST_IDS = {
-    PCELAR_AKT: "00000000-0000-0000-0000-000000000301",
-    POLJO_AKT: "00000000-0000-0000-0000-000000000302",
+    SEZONSKA: "00000000-0000-0000-0000-000000000301",
+    POLJOPRIVREDNIK: "00000000-0000-0000-0000-000000000302",
+    PCELAR: "00000000-0000-0000-0000-000000000303",
 } as const;
+
+/* ============================================================================
+  SEED
+============================================================================ */
 
 async function main() {
     const hash = await bcrypt.hash("1234", 10);
 
     await db.transaction(async (tx) => {
+        /* -------------------- KORISNICI -------------------- */
+        await tx
+            .insert(korisnici)
+            .values([
+                {
+                    id: KORISNIK_IDS.ADMIN,
+                    ime: "Admin",
+                    prezime: "Admin",
+                    email: "admin@test.com",
+                    sifra: hash,
+                    uloga: "administrator",
+                },
+                {
+                    id: KORISNIK_IDS.PCELAR,
+                    ime: "Pčelar",
+                    prezime: "Test",
+                    email: "pcelar@test.com",
+                    sifra: hash,
+                    uloga: "pcelar",
+                },
+                {
+                    id: KORISNIK_IDS.POLJOPRIVREDNIK,
+                    ime: "Poljoprivrednik",
+                    prezime: "Test",
+                    email: "poljo@test.com",
+                    sifra: hash,
+                    uloga: "poljoprivrednik",
+                },
+            ])
+            .onConflictDoNothing();
 
-        await tx.insert(korisnici).values([
-            {
-                id: KORISNIK_IDS.ADMIN,
-                ime: "admin",
-                prezime: "admin",
-                email: "admin@test.com",
-                sifra: hash,
-                uloga: "administrator",
-            },
-            {
-                id: KORISNIK_IDS.PCELAR,
-                ime: "Pcelar",
-                prezime: "Pcelar",
-                email: "pcelar@test.com",
-                sifra: hash,
-                uloga: "pcelar",
-            },
-            {
-                id: KORISNIK_IDS.POLJOPRIVREDNIK,
-                ime: "Poljoprivrednik",
-                prezime: "Poljoprivrednik",
-                email: "poljo@test.com",
-                sifra: hash,
-                uloga: "poljoprivrednik",
-            }
-        ]).onConflictDoNothing();
-
-        await tx.insert(pcelinjaci).values([
-            {
+        /* -------------------- PCELINJAK -------------------- */
+        await tx
+            .insert(pcelinjaci)
+            .values({
                 id: PCELINJAK_IDS.FRUSKA_GORA,
                 naziv: "Pčelinjak Fruška Gora",
                 adresa: "Fruška Gora bb",
-                geoSirina: "45.12345678",
-                geoDuzina: "19.12345678",
                 vlasnikId: KORISNIK_IDS.PCELAR,
-            },
-            {
-                id: PCELINJAK_IDS.AVALA,
-                naziv: "Pčelinjak Avala",
-                adresa: "Avala bb",
-                geoSirina: "44.65432100",
-                geoDuzina: "20.12345600",
-                vlasnikId: KORISNIK_IDS.PCELAR,
-            }
-        ]).onConflictDoNothing();
+            })
+            .onConflictDoNothing();
 
-        await tx.insert(kosnice).values([
-            {
+        /* -------------------- KOŠNICA -------------------- */
+        await tx
+            .insert(kosnice)
+            .values({
                 id: KOSNICA_IDS.K1,
                 broj: 1,
                 tip: "LR",
-                starostMatice: 1,
-                brNastavaka: 2,
                 pcelinjakId: PCELINJAK_IDS.FRUSKA_GORA,
-            },
-            {
-                id: KOSNICA_IDS.K2,
-                broj: 2,
-                tip: "DB",
-                starostMatice: 2,
-                brNastavaka: 3,
-                pcelinjakId: PCELINJAK_IDS.FRUSKA_GORA,
-            },
-            {
-                id: KOSNICA_IDS.K3,
-                broj: 3,
-                tip: "LR",
-                starostMatice: 1,
-                brNastavaka: 2,
-                pcelinjakId: PCELINJAK_IDS.AVALA,
-            }
-        ]).onConflictDoNothing();
+            })
+            .onConflictDoNothing();
 
-        await tx.insert(dnevnici).values([
-            {
+        /* -------------------- DNEVNIK -------------------- */
+        await tx
+            .insert(dnevnici)
+            .values({
                 id: "00000000-0000-0000-0000-000000000401",
                 kosnicaId: KOSNICA_IDS.K1,
                 vreme: "10:00",
                 kolicinaMeda: "12.50",
                 pregled: "Zdravo društvo",
                 komentar: "Dodate satne osnove",
-            },
-            {
-                id: "00000000-0000-0000-0000-000000000402",
-                kosnicaId: KOSNICA_IDS.K2,
-                vreme: "12:30",
-                kolicinaMeda: "8.20",
-                pregled: "Mirno društvo",
-                komentar: "Bez znakova bolesti",
-            }
-        ]).onConflictDoNothing();
+            })
+            .onConflictDoNothing();
 
-        await tx.insert(izvestaji).values([
-            {
+        /* -------------------- IZVEŠTAJ -------------------- */
+        await tx
+            .insert(izvestaji)
+            .values({
                 id: "00000000-0000-0000-0000-000000000501",
-                datumOd: new Date("2026-01-01"),
-                datumDo: new Date("2026-01-07"),
+                datumOd: new Date("2026-03-01"),
+                datumDo: new Date("2026-03-31"),
                 korisnikId: KORISNIK_IDS.PCELAR,
                 pcelinjakId: PCELINJAK_IDS.FRUSKA_GORA,
-            }
-        ]).onConflictDoNothing();
+            })
+            .onConflictDoNothing();
 
-        await tx.insert(aktivnosti).values([
-            {
-                id: AKTIVNOST_IDS.PCELAR_AKT,
-                naziv: "Pregled košnica",
-                opis: "Redovan prolećni pregled",
-                tip: "pregled",
-                datum: new Date(),
-            },
-            {
-                id: AKTIVNOST_IDS.POLJO_AKT,
-                naziv: "Priprema zemljišta",
-                opis: "Oranje i đubrenje parcele",
-                tip: "poljoprivreda",
-                datum: new Date(),
-            }
-        ]).onConflictDoNothing();
+        /* -------------------- AKTIVNOSTI -------------------- */
+        await tx
+            .insert(aktivnosti)
+            .values([
+                // SEZONSKA (sistemska, creatorId = null)
+                {
+                    id: AKTIVNOST_IDS.SEZONSKA,
+                    naziv: "Prolećni pregled košnica",
+                    opis: "Sezonska aktivnost – pregled stanja društava",
+                    tip: "SEZONSKA",
+                    datum: new Date("2026-03-20"),
+                    creatorId: null,
+                },
 
-        await tx.insert(notifikacije).values([
-            {
-                id: "00000000-0000-0000-0000-000000000601",
-                korisnikId: KORISNIK_IDS.PCELAR,
-                aktivnostId: AKTIVNOST_IDS.PCELAR_AKT,
-            },
-            {
-                id: "00000000-0000-0000-0000-000000000602",
-                korisnikId: KORISNIK_IDS.POLJOPRIVREDNIK,
-                aktivnostId: AKTIVNOST_IDS.POLJO_AKT,
-            }
-        ]).onConflictDoNothing();
+                // POLJOPRIVREDNIK (vidljivo pčelarima)
+                {
+                    id: AKTIVNOST_IDS.POLJOPRIVREDNIK,
+                    naziv: "Upozorenje: prskanje useva",
+                    opis: "Poljoprivrednik planira prskanje – zatvoriti leta",
+                    tip: "POLJOPRIVREDNIK",
+                    datum: new Date("2026-03-18"),
+                    creatorId: KORISNIK_IDS.POLJOPRIVREDNIK,
+                },
+
+                // PCELAR (privatna aktivnost)
+                {
+                    id: AKTIVNOST_IDS.PCELAR,
+                    naziv: "Dodavanje medišta",
+                    opis: "Privatna aktivnost pčelara",
+                    tip: "PCELAR",
+                    datum: new Date("2026-03-22"),
+                    creatorId: KORISNIK_IDS.PCELAR,
+                },
+            ])
+            .onConflictDoNothing();
+
+        /* -------------------- STATUSI (korisnik_aktivnosti) -------------------- */
+        await tx
+            .insert(korisnikAktivnosti)
+            .values([
+                {
+                    korisnikId: KORISNIK_IDS.PCELAR,
+                    aktivnostId: AKTIVNOST_IDS.SEZONSKA,
+                    uradjen: false,
+                },
+                {
+                    korisnikId: KORISNIK_IDS.PCELAR,
+                    aktivnostId: AKTIVNOST_IDS.POLJOPRIVREDNIK,
+                    uradjen: false,
+                },
+                {
+                    korisnikId: KORISNIK_IDS.PCELAR,
+                    aktivnostId: AKTIVNOST_IDS.PCELAR,
+                    uradjen: true,
+                    uradjenAt: new Date("2026-03-15"),
+                },
+            ])
+            .onConflictDoNothing();
     });
 
+    console.log("✅ Novi seed uspešno završen");
 }
 
 main().catch((err) => {
-    console.error(err);
+    console.error("❌ Seed greška:", err);
     process.exit(1);
 });

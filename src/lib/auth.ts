@@ -37,7 +37,7 @@ export function cookieOpts() {
     sameSite: "lax" as const,
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: 60 * 60 * 24 * 7, 
+    maxAge: 60 * 60 * 24 * 7,
   };
 }
 
@@ -87,8 +87,11 @@ export async function requireAuth(
     return { ok: false, status: 401, message: "Niste prijavljeni" };
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return { ok: false, status: 403, message: "Nemate pravo pristupa" };
+  if (allowedRoles) {
+    const userRoleUpper = (user.role ?? "").toUpperCase() as UserRole;
+    if (!allowedRoles.includes(userRoleUpper)) {
+      return { ok: false, status: 403, message: "Nemate pravo pristupa" };
+    }
   }
 
   return { ok: true, user };

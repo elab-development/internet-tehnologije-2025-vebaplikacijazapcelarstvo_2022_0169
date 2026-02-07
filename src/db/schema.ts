@@ -79,15 +79,57 @@ export const dnevnici = pgTable("dnevnici", {
 });
 
 
+import { uniqueIndex } from "drizzle-orm/pg-core";
+
+
+export const tipoviAktivnosti = ["SEZONSKA", "PCELAR", "POLJOPRIVREDNIK"] as const;
+export type TipAktivnosti = (typeof tipoviAktivnosti)[number];
+
+
 export const aktivnosti = pgTable("aktivnosti", {
     id: uuid("id").primaryKey().defaultRandom(),
 
     naziv: varchar("naziv", { length: 255 }).notNull(),
     opis: varchar("opis", { length: 512 }),
-    tip: varchar("tip", { length: 100 }),
+
+    tip: varchar("tip", { length: 30 }).notNull(),
+
+
     datum: timestamp("datum"),
-    uradjen: boolean("uradjen").default(false),
+
+    creatorId: uuid("creator_id").references(() => korisnici.id, {
+        onDelete: "set null",
+    }),
 });
+
+
+export const korisnikAktivnosti = pgTable(
+    "korisnik_aktivnosti",
+    {
+        id: uuid("id").primaryKey().defaultRandom(),
+
+        korisnikId: uuid("korisnik_id")
+            .notNull()
+            .references(() => korisnici.id, { onDelete: "cascade" }),
+
+        aktivnostId: uuid("aktivnost_id")
+            .notNull()
+            .references(() => aktivnosti.id, { onDelete: "cascade" }),
+
+        uradjen: boolean("uradjen").default(false),
+        uradjenAt: timestamp("uradjen_at"),
+        reminderSentAt: timestamp("reminder_sent_at"),
+    },
+    (t) => ({
+        korisnikAktivnostUnique: uniqueIndex(
+            "korisnik_aktivnosti_korisnik_aktivnost_unique"
+        ).on(t.korisnikId, t.aktivnostId),
+    })
+);
+
+
+
+
 
 export const notifikacije = pgTable("notifikacije", {
     id: uuid("id").primaryKey().defaultRandom(),

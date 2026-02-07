@@ -1,3 +1,5 @@
+import AktivnostiTable from "@/components/AktivnostiTable";
+
 export default function Page() {
     return (
         <main
@@ -8,12 +10,12 @@ export default function Page() {
                 backgroundPosition: "center",
             }}
         >
-            <div className="mx-auto max-w-4xl">
-                <div className="rounded-3xl border border-yellow-200/70 bg-white/70 p-6 shadow-sm backdrop-blur">
-                    <h1 className="text-3xl font-extrabold tracking-tight text-yellow-900">
-                        Stranica u pripremi...
-                    </h1>
-                </div>
+            <div className="mx-auto w-full max-w-6xl rounded-2xl bg-white/80 p-4 backdrop-blur-sm">
+                <h1 className="mb-4 text-2xl font-bold text-gray-900">
+                    Aktivnosti
+                </h1>
+
+                <AktivnostiTable />
             </div>
         </main>
     );

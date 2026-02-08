@@ -9,19 +9,17 @@ if (!JWT_SECRET) {
   throw new Error("Missing JWT_SECRET in env file");
 }
 
-/** Normalizacija uloge: sve svodimo na format koji koristi aplikacija */
 function normalizeRole(role: any): UserRole {
   const raw = String(role ?? "").trim();
   const upper = raw.toUpperCase();
 
-  // admin može doći kao "administrator" / "ADMINISTRATOR" -> mapiramo na "ADMIN"
   if (upper === "ADMINISTRATOR" || raw.toLowerCase() === "administrator") return "ADMIN" as UserRole;
 
   return upper as UserRole;
 }
 
 export function signAuthToken(claims: AuthTokenClaims) {
-  // upiši normalizovanu rolu u token
+
   const normalized: AuthTokenClaims = { ...claims, role: normalizeRole(claims.role) };
 
   return jwt.sign(normalized, JWT_SECRET, { algorithm: "HS256", expiresIn: "7d" });
@@ -52,7 +50,7 @@ export function cookieOpts() {
   };
 }
 
-/** Vrati ulogu iz cookie-a (server-side) */
+
 export async function getRoleFromCookies(): Promise<UserRole | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(AUTH_COOKIE)?.value;
@@ -60,13 +58,13 @@ export async function getRoleFromCookies(): Promise<UserRole | null> {
 
   try {
     const claims = verifyAuthToken(token);
-    return claims.role; // već normalizovano
+    return claims.role;
   } catch {
     return null;
   }
 }
 
-/** Vrati AuthUser iz cookie-a (server-side) */
+
 export async function getAuthUserFromCookies(): Promise<AuthUser | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(AUTH_COOKIE)?.value;
@@ -78,7 +76,7 @@ export async function getAuthUserFromCookies(): Promise<AuthUser | null> {
       id: claims.sub,
       email: claims.email,
       name: claims.name,
-      role: claims.role, // već normalizovano
+      role: claims.role,
     };
   } catch {
     return null;

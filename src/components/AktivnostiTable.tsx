@@ -80,7 +80,7 @@ export default function AktivnostiTable() {
         const payload = {
             naziv: form.naziv.trim(),
             opis: form.opis.trim() === "" ? null : form.opis.trim(),
-            datum: form.datum === "" ? null : form.datum, // YYYY-MM-DD
+            datum: form.datum === "" ? null : form.datum,
         };
 
         try {
@@ -100,7 +100,7 @@ export default function AktivnostiTable() {
                 return;
             }
 
-            // edit
+
             const res = await fetch(`/api/aktivnosti/${modal.editId}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
@@ -133,7 +133,7 @@ export default function AktivnostiTable() {
     async function toggleDone(id: string, checked: boolean) {
         try {
             setError(null);
-            // optimistički update
+
             setData((prev) => prev.map((x) => (x.id === id ? { ...x, uradjen: checked } : x)));
 
             const res = await fetch(`/api/aktivnosti/${id}/status`, {
@@ -144,12 +144,12 @@ export default function AktivnostiTable() {
             const out = await res.json();
             if (!res.ok) throw new Error(out?.message || out?.error || "Ne mogu da sačuvam status.");
 
-            // sync sa serverom (za svaki slučaj)
+
             setData((prev) =>
                 prev.map((x) => (x.id === id ? { ...x, uradjen: Boolean(out?.uradjen) } : x))
             );
         } catch (e: any) {
-            // rollback
+
             setData((prev) => prev.map((x) => (x.id === id ? { ...x, uradjen: !checked } : x)));
             setError(String(e?.message || e));
         }

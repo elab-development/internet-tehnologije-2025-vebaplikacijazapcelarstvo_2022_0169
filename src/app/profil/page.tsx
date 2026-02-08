@@ -1,3 +1,7 @@
+"use client";
+
+import ProfilePanel from "@/components/ProfilePanel";
+
 export default function Page() {
     return (
         <main
@@ -9,11 +13,16 @@ export default function Page() {
             }}
         >
             <div className="mx-auto max-w-4xl">
-                <div className="rounded-3xl border border-yellow-200/70 bg-white/70 p-6 shadow-sm backdrop-blur">
+                <div className="mb-6 rounded-3xl border border-yellow-200/70 bg-white/75 p-6 shadow-sm backdrop-blur">
                     <h1 className="text-3xl font-extrabold tracking-tight text-yellow-900">
-                        Stranica u pripremi...
+                        Profil
                     </h1>
+                    <p className="mt-1 text-sm text-gray-700">
+                        Pregled i izmena osnovnih podataka i šifre.
+                    </p>
                 </div>
+
+                <ProfilePanel />
             </div>
         </main>
     );

@@ -5,10 +5,10 @@ export type AktivnostItem = {
     naziv: string;
     opis: string | null;
     tip: "SEZONSKA" | "PCELAR" | "POLJOPRIVREDNIK";
-    datum: string | null; // ISO
+    datum: string | null;
     uradjen: boolean;
 
-    // ✅ prava po redu (server računa)
+
     canEdit: boolean;
     canDelete: boolean;
 };

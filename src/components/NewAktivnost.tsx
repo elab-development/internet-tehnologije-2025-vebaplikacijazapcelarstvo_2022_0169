@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 export type NewAktivnostForm = {
     naziv: string;
     opis: string;
-    datum: string; // "YYYY-MM-DD"
+    datum: string;
 };
 
 const empty: NewAktivnostForm = { naziv: "", opis: "", datum: "" };

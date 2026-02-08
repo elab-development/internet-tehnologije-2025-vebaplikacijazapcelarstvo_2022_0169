@@ -24,6 +24,7 @@ services:
       JWT_EXPIRES: ${JWT_EXPIRES}
       RESEND_API_KEY: ${RESEND_API_KEY}
       MAIL_FROM: ${MAIL_FROM}
+      OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY}
       API_URL: http://localhost:3000
       COOKIE_SECURE: "false"
     command: sh -c "npm run db:migrate && npm run db:seed && npm run start"

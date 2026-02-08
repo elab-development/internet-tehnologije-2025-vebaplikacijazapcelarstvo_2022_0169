@@ -1,3 +1,5 @@
+"use client";
+
 import AktivnostiTable from "@/components/AktivnostiTable";
 
 export default function Page() {
@@ -10,10 +12,19 @@ export default function Page() {
                 backgroundPosition: "center",
             }}
         >
-            <div className="mx-auto w-full max-w-6xl rounded-2xl bg-white/80 p-4 backdrop-blur-sm">
-                <h1 className="mb-4 text-2xl font-bold text-gray-900">
-                    Aktivnosti
-                </h1>
+            <div className="mx-auto max-w-6xl">
+                <div className="mb-6 rounded-3xl border border-yellow-200/70 bg-white/75 p-6 shadow-sm backdrop-blur">
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <h1 className="text-3xl font-extrabold tracking-tight text-yellow-900">
+                                Aktivnosti
+                            </h1>
+                            <p className="mt-1 text-sm text-gray-700">
+                                Sezonske i poljoprivredne aktivnosti + tvoje privatne aktivnosti.
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
                 <AktivnostiTable />
             </div>

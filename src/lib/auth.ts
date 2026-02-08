@@ -9,11 +9,23 @@ if (!JWT_SECRET) {
   throw new Error("Missing JWT_SECRET in env file");
 }
 
+/** Normalizacija uloge: sve svodimo na format koji koristi aplikacija */
+function normalizeRole(role: any): UserRole {
+  const raw = String(role ?? "").trim();
+  const upper = raw.toUpperCase();
 
-export function signAuthToken(claims: AuthTokenClaims) {
-  return jwt.sign(claims, JWT_SECRET, { algorithm: "HS256", expiresIn: "7d" });
+  // admin može doći kao "administrator" / "ADMINISTRATOR" -> mapiramo na "ADMIN"
+  if (upper === "ADMINISTRATOR" || raw.toLowerCase() === "administrator") return "ADMIN" as UserRole;
+
+  return upper as UserRole;
 }
 
+export function signAuthToken(claims: AuthTokenClaims) {
+  // upiši normalizovanu rolu u token
+  const normalized: AuthTokenClaims = { ...claims, role: normalizeRole(claims.role) };
+
+  return jwt.sign(normalized, JWT_SECRET, { algorithm: "HS256", expiresIn: "7d" });
+}
 
 export function verifyAuthToken(token: string): AuthTokenClaims {
   const payload = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload & Partial<AuthTokenClaims>;
@@ -26,10 +38,9 @@ export function verifyAuthToken(token: string): AuthTokenClaims {
     sub: payload.sub,
     email: payload.email,
     name: payload.name ?? "",
-    role: payload.role as UserRole,
+    role: normalizeRole(payload.role),
   };
 }
-
 
 export function cookieOpts() {
   return {
@@ -43,13 +54,13 @@ export function cookieOpts() {
 
 /** Vrati ulogu iz cookie-a (server-side) */
 export async function getRoleFromCookies(): Promise<UserRole | null> {
-  const cookieStore = await cookies(); // u novijem Next-u može biti Promise
+  const cookieStore = await cookies();
   const token = cookieStore.get(AUTH_COOKIE)?.value;
   if (!token) return null;
 
   try {
     const claims = verifyAuthToken(token);
-    return claims.role;
+    return claims.role; // već normalizovano
   } catch {
     return null;
   }
@@ -67,7 +78,7 @@ export async function getAuthUserFromCookies(): Promise<AuthUser | null> {
       id: claims.sub,
       email: claims.email,
       name: claims.name,
-      role: claims.role,
+      role: claims.role, // već normalizovano
     };
   } catch {
     return null;
@@ -78,21 +89,22 @@ type AuthResult =
   | { ok: true; user: AuthUser }
   | { ok: false; status: 401 | 403; message: string };
 
-export async function requireAuth(
-  allowedRoles?: UserRole[]
-): Promise<AuthResult> {
+export async function requireAuth(allowedRoles?: UserRole[]): Promise<AuthResult> {
   const user = await getAuthUserFromCookies();
 
   if (!user) {
     return { ok: false, status: 401, message: "Niste prijavljeni" };
   }
 
-  if (allowedRoles) {
-    const userRoleUpper = (user.role ?? "").toUpperCase() as UserRole;
-    if (!allowedRoles.includes(userRoleUpper)) {
+  const userRole = normalizeRole(user.role);
+  const normalizedUser: AuthUser = { ...user, role: userRole };
+
+  if (allowedRoles && allowedRoles.length > 0) {
+    const allowed = allowedRoles.map((r) => normalizeRole(r));
+    if (!allowed.includes(userRole)) {
       return { ok: false, status: 403, message: "Nemate pravo pristupa" };
     }
   }
 
-  return { ok: true, user };
+  return { ok: true, user: normalizedUser };
 }

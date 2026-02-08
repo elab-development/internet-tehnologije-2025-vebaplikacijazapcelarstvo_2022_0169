@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:16
+    container_name: pcelarstvo-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pcelarstvo
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  web:
+    build: .
+    container_name: pcelarstvo-web
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/pcelarstvo
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES: ${JWT_EXPIRES}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      MAIL_FROM: ${MAIL_FROM}
+      API_URL: http://localhost:3000
+      COOKIE_SECURE: "false"
+    command: sh -c "npm run db:migrate && npm run db:seed && npm run start"
+
+volumes:
+  pgdata:

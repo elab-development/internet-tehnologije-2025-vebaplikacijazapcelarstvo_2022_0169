@@ -101,7 +101,6 @@ async function main() {
             .values({
                 id: "00000000-0000-0000-0000-000000000401",
                 kosnicaId: KOSNICA_IDS.K1,
-                vreme: "10:00",
                 kolicinaMeda: "12.50",
                 pregled: "Zdravo društvo",
                 komentar: "Dodate satne osnove",

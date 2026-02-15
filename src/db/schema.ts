@@ -67,8 +67,6 @@ export const dnevnici = pgTable("dnevnici", {
     id: uuid("id").primaryKey().defaultRandom(),
 
     datum: timestamp("datum").defaultNow(),
-    vreme: varchar("vreme", { length: 50 }),
-    slika: varchar("slika", { length: 512 }),
     kolicinaMeda: decimal("kolicina_meda", { precision: 10, scale: 2 }),
     pregled: varchar("pregled", { length: 512 }),
     komentar: varchar("komentar", { length: 512 }),

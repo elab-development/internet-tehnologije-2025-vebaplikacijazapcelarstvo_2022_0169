@@ -36,6 +36,13 @@
       "when": 1770481276626,
       "tag": "0004_chemical_tarot",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1771193287246,
+      "tag": "0005_magenta_black_widow",
+      "breakpoints": true
     }
   ]
 }

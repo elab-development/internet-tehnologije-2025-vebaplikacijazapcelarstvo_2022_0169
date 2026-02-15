@@ -28,8 +28,6 @@ export interface AktivnostRow extends WithId {
 
 export interface DnevnikRow extends WithId {
   datum: Date;
-  vreme: string | null;
-  slika: string | null;
   kolicina_meda: PgNumeric | null;
   pregled: string | null;
   komentar: string | null;
@@ -90,8 +88,6 @@ export interface Aktivnost {
 export interface Dnevnik {
   id: UUID;
   datum: ISODateString;
-  vreme?: string | null;
-  slika?: string | null;
   kolicinaMeda?: number | null;
   pregled?: string | null;
   komentar?: string | null;
@@ -164,7 +160,6 @@ export type AktivnostUpdateDTO = Partial<Omit<AktivnostCreateDTO, "naziv">> & {
 // --- Dnevnici ---
 export type DnevnikCreateDTO = {
   kosnicaId: UUID;
-  vreme?: string | null;
   slika?: string | null;
   kolicinaMeda?: number | null;
   pregled?: string | null;
@@ -291,8 +286,6 @@ export const mapAktivnostRow = (r: AktivnostRow): Aktivnost => ({
 export const mapDnevnikRow = (r: DnevnikRow): Dnevnik => ({
   id: r.id,
   datum: r.datum.toISOString(),
-  vreme: r.vreme,
-  slika: r.slika,
   kolicinaMeda: r.kolicina_meda !== null ? Number(r.kolicina_meda) : null,
   pregled: r.pregled,
   komentar: r.komentar,

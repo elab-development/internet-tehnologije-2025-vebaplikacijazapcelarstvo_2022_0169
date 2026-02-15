@@ -1,0 +1,1 @@
+ALTER TABLE "dnevnici" DROP COLUMN "vreme";

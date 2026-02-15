@@ -1,3 +1,37 @@
+/**
+ * @openapi
+ * /api/profile:
+ *   get:
+ *     summary: Podaci o trenutno ulogovanom korisniku
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200: { description: OK }
+ *       401: { description: Neautorizovano }
+ *       404: { description: Korisnik nije nađen }
+ *
+ *   put:
+ *     summary: Izmena profila korisnika
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [ime, prezime, email]
+ *             properties:
+ *               ime: { type: string }
+ *               prezime: { type: string }
+ *               email: { type: string, format: email }
+ *     responses:
+ *       200: { description: Uspešno izmenjeno }
+ *       400: { description: Neispravni podaci ili email zauzet }
+ *       401: { description: Neautorizovano }
+ */
+
+
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { korisnici } from "@/db/schema";

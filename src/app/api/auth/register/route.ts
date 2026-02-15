@@ -1,3 +1,31 @@
+/**
+ * @openapi
+ * /api/auth/register:
+ *   post:
+ *     summary: Registracija korisnika
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [ime, prezime, email, sifra]
+ *             properties:
+ *               ime: { type: string }
+ *               prezime: { type: string }
+ *               email: { type: string, format: email }
+ *               sifra: { type: string }
+ *               uloga:
+ *                 type: string
+ *                 enum: [ADMIN, PCELAR, POLJOPRIVREDNIK]
+ *     responses:
+ *       200: { description: Uspešna registracija }
+ *       400: { description: Nedostaju podaci ili email postoji }
+ *       500: { description: Greška na serveru }
+ */
+
+
 import { db } from "@/db";
 import { korisnici } from "@/db/schema";
 import { eq } from "drizzle-orm";

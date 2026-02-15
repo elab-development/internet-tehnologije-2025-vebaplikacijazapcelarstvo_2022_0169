@@ -1,3 +1,29 @@
+/**
+ * @openapi
+ * /api/cron/send-activity-reminders:
+ *   get:
+ *     summary: (CRON) Šalje email podsetnike za aktivnosti za 2 dana
+ *     description: Poziva se iz schedulera. Ako je CRON_SECRET podešen, potreban je header `x-cron-secret`.
+ *     parameters:
+ *       - in: header
+ *         name: x-cron-secret
+ *         required: false
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok: { type: boolean, example: true }
+ *                 sent: { type: integer, example: 3 }
+ *       403:
+ *         description: Forbidden (pogrešan ili nedostaje secret)
+ */
+
+
 import { NextResponse } from "next/server";
 import { and, eq, isNull, or, gte, lt } from "drizzle-orm";
 

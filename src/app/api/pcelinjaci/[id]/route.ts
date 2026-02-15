@@ -1,3 +1,47 @@
+/**
+ * @openapi
+ * /api/pcelinjaci/{id}:
+ *   put:
+ *     summary: Izmena pčelinjaka (PCELAR)
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [naziv]
+ *             properties:
+ *               naziv: { type: string }
+ *               adresa: { type: string, nullable: true }
+ *               geoSirina: { type: number, nullable: true }
+ *               geoDuzina: { type: number, nullable: true }
+ *     responses:
+ *       200: { description: OK }
+ *       400: { description: Naziv je obavezan }
+ *       404: { description: Pčelinjak nije pronađen ili nemaš pravo pristupa }
+ *
+ *   delete:
+ *     summary: Brisanje pčelinjaka (PCELAR)
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200: { description: OK }
+ *       404: { description: Pčelinjak nije pronađen ili nemaš pravo pristupa }
+ */
+
+
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { pcelinjaci, kosnice } from "@/db/schema";

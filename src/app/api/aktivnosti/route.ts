@@ -1,3 +1,103 @@
+/**
+ * @openapi
+ * components:
+ *   securitySchemes:
+ *     cookieAuth:
+ *       type: apiKey
+ *       in: cookie
+ *       name: auth
+ *   schemas:
+ *     AktivnostTip:
+ *       type: string
+ *       enum: [SEZONSKA, PCELAR, POLJOPRIVREDNIK]
+ *     AktivnostListItem:
+ *       type: object
+ *       required: [id, naziv, tip, datum, uradjen, canEdit, canDelete]
+ *       properties:
+ *         id: { type: string, format: uuid }
+ *         naziv: { type: string }
+ *         opis: { type: string, nullable: true }
+ *         tip:
+ *           $ref: "#/components/schemas/AktivnostTip"
+ *         datum:
+ *           type: string
+ *           nullable: true
+ *           description: ISO string (ili null ako nije unet datum)
+ *           example: "2026-02-14T00:00:00.000Z"
+ *         uradjen: { type: boolean }
+ *         canEdit: { type: boolean }
+ *         canDelete: { type: boolean }
+ *     AktivnostCreateRequest:
+ *       type: object
+ *       required: [naziv]
+ *       properties:
+ *         naziv: { type: string, example: "Pregled kosnica" }
+ *         opis: { type: string, nullable: true, example: "Detaljan pregled stanja" }
+ *         datum:
+ *           type: string
+ *           nullable: true
+ *           description: Datum u formatu YYYY-MM-DD (server dodaje T00:00:00)
+ *           example: "2026-02-20"
+ *     AktivnostCreateResponse:
+ *       type: object
+ *       required: [ok, id]
+ *       properties:
+ *         ok: { type: boolean, example: true }
+ *         id: { type: string, format: uuid }
+ *
+ * /api/aktivnosti:
+ *   get:
+ *     summary: Lista aktivnosti vidljivih ulogovanom korisniku
+ *     description: |
+ *       Vraća aktivnosti sa pravima (canEdit/canDelete) i statusom uradjen za konkretnog korisnika.
+ *       Filtriranje zavisi od uloge:
+ *       - ADMIN: vidi sve
+ *       - PCELAR/POLJOPRIVREDNIK: vidi SEZONSKA, POLJOPRIVREDNIK, i svoje (PCELAR + creatorId=userId) prema kodu.
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: "#/components/schemas/AktivnostListItem"
+ *       401:
+ *         description: Neautorizovano
+ *       403:
+ *         description: Zabranjeno (uloga nema pristup)
+ *
+ *   post:
+ *     summary: Kreira novu aktivnost
+ *     description: |
+ *       Kreira aktivnost.
+ *       - ADMIN kreira tip=SEZONSKA
+ *       - PCELAR/POLJOPRIVREDNIK kreira tip=role
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: "#/components/schemas/AktivnostCreateRequest"
+ *     responses:
+ *       200:
+ *         description: Kreirano
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/AktivnostCreateResponse"
+ *       400:
+ *         description: Neispravan zahtev (npr. naziv je obavezan)
+ *       401:
+ *         description: Neautorizovano
+ *       403:
+ *         description: Zabranjeno (uloga nema pristup)
+ */
+
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { aktivnosti, korisnikAktivnosti } from "@/db/schema";

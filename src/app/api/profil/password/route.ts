@@ -1,3 +1,29 @@
+/**
+ * @openapi
+ * /api/profil/password:
+ *   patch:
+ *     summary: Promena šifre korisnika
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [currentPassword, newPassword, confirmPassword]
+ *             properties:
+ *               currentPassword: { type: string }
+ *               newPassword: { type: string, minLength: 8 }
+ *               confirmPassword: { type: string }
+ *     responses:
+ *       200: { description: OK }
+ *       400: { description: Validacija nije prošla ili trenutna šifra nije tačna }
+ *       401: { description: Neautorizovano }
+ *       500: { description: Server greška pri promeni šifre }
+ */
+
+
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { korisnici } from "@/db/schema";

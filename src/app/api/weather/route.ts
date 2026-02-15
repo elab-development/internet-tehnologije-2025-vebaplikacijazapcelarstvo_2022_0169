@@ -1,3 +1,30 @@
+/**
+ * @openapi
+ * /api/weather:
+ *   get:
+ *     summary: Vremenska prognoza (danas + naredna 4 dana)
+ *     description: |
+ *       Vraća trenutne vremenske podatke i prognozu za naredna 4 dana
+ *       na osnovu prosleđene adrese (OpenWeather API).
+ *     parameters:
+ *       - in: query
+ *         name: address
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: "Beograd"
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: Nedostaje address parametar
+ *       404:
+ *         description: Lokacija nije pronađena
+ *       500:
+ *         description: Greška pri dobavljanju vremenske prognoze
+ */
+
+
 import { NextResponse } from "next/server";
 
 const API_KEY = process.env.OPENWEATHER_API_KEY;
@@ -44,7 +71,7 @@ export async function GET(req: Request) {
   }
 
   try {
-    // 1) Geocoding
+    
     const geoRes = await fetch(
       `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(address)}&limit=1&appid=${API_KEY}`,
       { cache: "no-store" }
@@ -60,7 +87,7 @@ export async function GET(req: Request) {
 
     const { lat, lon, name } = geoData[0];
 
-    // 2) 5-day / 3h forecast
+  
     const weatherRes = await fetch(
       `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`,
       { cache: "no-store" }
@@ -73,7 +100,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ city: name ?? "", today: null, days: [] });
     }
 
-    // "trenutno": prvi point (najbliži sada)
+    
     const nowPoint = list[0];
     const today = {
       dt: Number(nowPoint.dt),
@@ -85,7 +112,7 @@ export async function GET(req: Request) {
         (String(nowPoint?.weather?.[0]?.main ?? "").toLowerCase().includes("rain")),
     };
 
-    // Grupisanje po danima
+   
     const byDay = new Map<string, any[]>();
     for (const item of list) {
       const dayKey = ymdFromDt(Number(item.dt));
@@ -93,11 +120,10 @@ export async function GET(req: Request) {
       byDay.get(dayKey)!.push(item);
     }
 
-    // Sortirani dani (od danas)
+   
     const dayKeys = Array.from(byDay.keys()).sort();
 
-    // Uzimamo: danas + naredna 4 dana = ukupno 5 dana u UI (danas se prikazuje posebno kao "today")
-    // Za kartice "naredna 4 dana" uzimamo 4 dana POSLE današnjeg
+    
     const todayKey = ymdFromDt(today.dt);
     const nextKeys = dayKeys.filter((k) => k > todayKey).slice(0, 4);
 
@@ -108,7 +134,7 @@ export async function GET(req: Request) {
       let max = -Infinity;
       let willRain = false;
 
-      // biramo “reprezentativan” zapis oko 12:00 ako postoji, inače srednji
+      
       const midday =
         items.find((it) => new Date(Number(it.dt) * 1000).getHours() === 12) ??
         items[Math.floor(items.length / 2)];

@@ -1,3 +1,55 @@
+/**
+ * @openapi
+ * /api/kosnice/{id}:
+ *   put:
+ *     summary: Izmena košnice (PCELAR)
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               broj: { type: integer, example: 12 }
+ *               tip: { type: string, nullable: true, example: "LR" }
+ *               starostMatice: { type: integer, nullable: true, example: 2 }
+ *               brNastavaka: { type: integer, nullable: true, example: 3 }
+ *               datum:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Datum (ISO ili YYYY-MM-DD)
+ *                 example: "2026-03-01"
+ *     responses:
+ *       200: { description: OK }
+ *       400: { description: Neispravni podaci (npr. broj/datum/duplikat) }
+ *       403: { description: Nemaš pravo pristupa košnici }
+ *       404: { description: Košnica ne postoji }
+ *       500: { description: Greška pri izmeni košnice }
+ *
+ *   delete:
+ *     summary: Brisanje košnice (PCELAR)
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200: { description: OK }
+ *       403: { description: Nemaš pravo pristupa košnici }
+ *       404: { description: Košnica ne postoji }
+ *       500: { description: Greška pri brisanju košnice }
+ */
+
+
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { db } from "@/db";

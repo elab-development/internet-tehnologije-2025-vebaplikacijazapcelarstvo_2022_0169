@@ -1,3 +1,54 @@
+/**
+ * @openapi
+ * /api/pcelinjaci/{id}/kosnice:
+ *   get:
+ *     summary: Lista košnica za pčelinjak (PCELAR)
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     responses:
+ *       200: { description: OK }
+ *       404: { description: Pčelinjak nije pronađen ili nemaš pravo pristupa }
+ *       500: { description: Greška pri učitavanju košnica }
+ *
+ *   post:
+ *     summary: Kreiranje košnice u pčelinjaku (PCELAR)
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [broj]
+ *             properties:
+ *               broj: { type: integer, example: 12 }
+ *               tip: { type: string, nullable: true, example: "LR" }
+ *               starostMatice: { type: integer, nullable: true, example: 2 }
+ *               brNastavaka: { type: integer, nullable: true, example: 3 }
+ *               datum:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Datum (ISO ili YYYY-MM-DD). Ako nije unet, server postavlja današnji datum.
+ *                 example: "2026-03-01"
+ *     responses:
+ *       201: { description: Kreirano }
+ *       400: { description: Neispravni podaci ili duplikat broja }
+ *       404: { description: Pčelinjak nije pronađen ili nemaš pravo pristupa }
+ *       500: { description: Greška pri kreiranju košnice }
+ */
+
+
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { db } from "@/db";

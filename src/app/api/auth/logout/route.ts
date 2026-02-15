@@ -1,3 +1,26 @@
+/**
+ * @openapi
+ * /api/auth/logout:
+ *   post:
+ *     summary: Odjava korisnika
+ *     description: |
+ *       Briše auth cookie i odjavljuje trenutno ulogovanog korisnika.
+ *     responses:
+ *       200:
+ *         description: Uspešna odjava
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                   example: true
+ *       500:
+ *         description: Greška na serveru
+ */
+
+
 import { NextResponse } from "next/server";
 import { AUTH_COOKIE } from "@/lib/auth";
 import { cookies } from "next/headers";

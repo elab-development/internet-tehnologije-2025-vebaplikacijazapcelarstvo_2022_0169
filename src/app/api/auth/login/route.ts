@@ -1,3 +1,66 @@
+/**
+ * @openapi
+ * components:
+ *   schemas:
+ *     LoginRequest:
+ *       type: object
+ *       required: [email]
+ *       properties:
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: "jana@mail.com"
+ *         password:
+ *           type: string
+ *           description: Lozinka korisnika (može i kao 'sifra')
+ *           example: "tajna123"
+ *         sifra:
+ *           type: string
+ *           description: Alternativno polje za lozinku
+ *           example: "tajna123"
+ *     AuthUser:
+ *       type: object
+ *       required: [id, email, name, role]
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         email:
+ *           type: string
+ *           format: email
+ *         name:
+ *           type: string
+ *         role:
+ *           type: string
+ *           enum: [ADMIN, PCELAR, POLJOPRIVREDNIK]
+ *
+ * /api/auth/login:
+ *   post:
+ *     summary: Prijava korisnika
+ *     description: |
+ *       Autentifikacija korisnika na osnovu emaila i lozinke.
+ *       Ako su podaci ispravni, postavlja HTTP-only auth cookie i vraća podatke o korisniku.
+ *     security: []   # login ne zahteva auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: "#/components/schemas/LoginRequest"
+ *     responses:
+ *       200:
+ *         description: Uspešna prijava
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/AuthUser"
+ *       401:
+ *         description: Pogrešan email ili lozinka
+ *       500:
+ *         description: Greška na serveru
+ */
+
+
 import { db } from "@/db";
 import { korisnici } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -10,7 +73,7 @@ export async function POST(req: Request) {
   try {
     const body = (await req.json()) as LoginDTO;
     const email = body.email?.trim();
-    const password = body.password ?? body.sifra; // podrži oba
+    const password = body.password ?? body.sifra; 
 
     if (!email || !password) {
       return NextResponse.json({ error: "Pogrešan email ili lozinka" }, { status: 401 });

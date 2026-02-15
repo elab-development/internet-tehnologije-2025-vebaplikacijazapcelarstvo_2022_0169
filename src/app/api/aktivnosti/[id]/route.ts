@@ -1,3 +1,83 @@
+/**
+ * @openapi
+ * components:
+ *   schemas:
+ *     AktivnostUpdateRequest:
+ *       type: object
+ *       required: [naziv]
+ *       properties:
+ *         naziv:
+ *           type: string
+ *           example: "Ažuriran naziv aktivnosti"
+ *         opis:
+ *           type: string
+ *           nullable: true
+ *           example: "Izmenjen opis aktivnosti"
+ *         datum:
+ *           type: string
+ *           nullable: true
+ *           description: Datum u formatu YYYY-MM-DD
+ *           example: "2026-03-01"
+ *
+ * /api/aktivnosti/{id}:
+ *   put:
+ *     summary: Izmena postojeće aktivnosti
+ *     description: |
+ *       Menja naziv, opis i datum aktivnosti.
+ *       - ADMIN može menjati bilo koju aktivnost
+ *       - PCELAR / POLJOPRIVREDNIK mogu menjati samo svoje aktivnosti
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: "#/components/schemas/AktivnostUpdateRequest"
+ *     responses:
+ *       200:
+ *         description: Uspešno izmenjeno
+ *       400:
+ *         description: Neispravan zahtev (naziv je obavezan)
+ *       401:
+ *         description: Neautorizovano
+ *       403:
+ *         description: Nemaš pravo izmene ove aktivnosti
+ *       404:
+ *         description: Aktivnost ne postoji
+ *
+ *   delete:
+ *     summary: Brisanje aktivnosti
+ *     description: |
+ *       Briše aktivnost.
+ *       - ADMIN može obrisati bilo koju
+ *       - Ostali mogu obrisati samo svoje aktivnosti
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Uspešno obrisano
+ *       401:
+ *         description: Neautorizovano
+ *       403:
+ *         description: Nemaš pravo brisanja ove aktivnosti
+ */
+
+
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { aktivnosti } from "@/db/schema";

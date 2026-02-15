@@ -1,3 +1,48 @@
+/**
+ * @openapi
+ * /api/pcelinjaci:
+ *   get:
+ *     summary: Lista pčelinjaka ulogovanog pčelara
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id: { type: string, format: uuid }
+ *                   naziv: { type: string }
+ *                   adresa: { type: string, nullable: true }
+ *                   geoSirina: { type: number, nullable: true }
+ *                   geoDuzina: { type: number, nullable: true }
+ *
+ *   post:
+ *     summary: Kreiranje novog pčelinjaka
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [naziv]
+ *             properties:
+ *               naziv: { type: string }
+ *               adresa: { type: string, nullable: true }
+ *               geoSirina: { type: number, nullable: true }
+ *               geoDuzina: { type: number, nullable: true }
+ *     responses:
+ *       201: { description: Kreirano }
+ *       400: { description: Naziv je obavezan }
+ */
+
+
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { pcelinjaci } from "@/db/schema";

@@ -7,7 +7,9 @@ import ListaDnevnika, { type DnevnikItem } from "@/components/ListaDnevnika";
 import NewDnevnik, { type NewDnevnikForm } from "@/components/NewDnevnik";
 
 type PcelinjakOpt = { id: string; naziv: string; adresa: string | null };
-type KosnicaOpt = { id: string; naziv: string };
+
+
+type KosnicaOpt = { id: string; broj: number };
 
 type ModalState =
   | { open: false }
@@ -58,7 +60,13 @@ export default function Page() {
     const data = await res.json();
     if (!res.ok) throw new Error(data?.error || "Greška pri učitavanju košnica");
 
-    setKosnice((data ?? []).map((k: any) => ({ id: k.id, naziv: k.naziv ?? "Košnica" })));
+    
+    setKosnice(
+      (data ?? []).map((k: any) => ({
+        id: k.id,
+        broj: Number(k.broj),
+      }))
+    );
   }
 
   async function loadDnevnici() {
@@ -113,7 +121,7 @@ export default function Page() {
         alert(String(e));
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [pcelinjakId]);
 
   useEffect(() => {
@@ -125,7 +133,7 @@ export default function Page() {
         alert(String(e));
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [kosnicaId, sort]);
 
   function resetFilters() {
@@ -236,8 +244,8 @@ export default function Page() {
         </div>
 
         <DnevnikSearch
-          pcelinjaci={pcelinjaci.map((p) => ({ id: p.id, naziv: p.naziv }))}
-          kosnice={kosnice}
+          pcelinjaci={pcelinjaci.map((p) => ({ id: p.id, label: p.naziv }))}
+          kosnice={kosnice.map((k) => ({ id: k.id, label: String(k.broj) }))}
           selectedPcelinjakId={pcelinjakId}
           selectedKosnicaId={kosnicaId}
           sort={sort}
@@ -245,6 +253,10 @@ export default function Page() {
           onChangeKosnicaId={setKosnicaId}
           onChangeSort={setSort}
           onReset={resetFilters}
+          onDownload={() => {
+            
+            console.log("Preuzmi dnevnik klik");
+          }}
         />
 
         <WeatherWidget address={selectedP?.adresa ?? null} />
@@ -307,3 +319,4 @@ export default function Page() {
     </main>
   );
 }
+

@@ -6,8 +6,13 @@ import WeatherWidget from "@/components/WeatherWidget";
 import ListaDnevnika, { type DnevnikItem } from "@/components/ListaDnevnika";
 import NewDnevnik, { type NewDnevnikForm } from "@/components/NewDnevnik";
 
-type PcelinjakOpt = { id: string; naziv: string; adresa: string | null };
-
+type PcelinjakOpt = {
+  id: string;
+  naziv: string;
+  adresa: string | null;
+  geoSirina: number | null;
+  geoDuzina: number | null;
+};
 
 type KosnicaOpt = { id: string; broj: number };
 
@@ -41,11 +46,14 @@ export default function Page() {
     const data = await res.json();
     if (!res.ok) throw new Error(data?.error || "Greška pri učitavanju pčelinjaka");
 
+
     setPcelinjaci(
       (data ?? []).map((p: any) => ({
         id: p.id,
         naziv: p.naziv,
         adresa: p.adresa ?? null,
+        geoSirina: p.geoSirina == null ? null : Number(p.geoSirina),
+        geoDuzina: p.geoDuzina == null ? null : Number(p.geoDuzina),
       }))
     );
   }
@@ -60,7 +68,6 @@ export default function Page() {
     const data = await res.json();
     if (!res.ok) throw new Error(data?.error || "Greška pri učitavanju košnica");
 
-    
     setKosnice(
       (data ?? []).map((k: any) => ({
         id: k.id,
@@ -121,7 +128,6 @@ export default function Page() {
         alert(String(e));
       }
     })();
-    
   }, [pcelinjakId]);
 
   useEffect(() => {
@@ -133,7 +139,6 @@ export default function Page() {
         alert(String(e));
       }
     })();
-    
   }, [kosnicaId, sort]);
 
   function resetFilters() {
@@ -178,15 +183,15 @@ export default function Page() {
       const res =
         modal.mode === "add"
           ? await fetch("/api/dnevnici", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            })
-          : await fetch(`/api/dnevnici/${modal.editId}`, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(payload),
-            });
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+          : await fetch(`/api/dnevnici/${(modal as any).editId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
 
       const out = await res.json();
       if (!res.ok) throw new Error(out?.error || "Greška");
@@ -254,12 +259,26 @@ export default function Page() {
           onChangeSort={setSort}
           onReset={resetFilters}
           onDownload={() => {
-            
             console.log("Preuzmi dnevnik klik");
           }}
         />
 
-        <WeatherWidget address={selectedP?.adresa ?? null} />
+
+        {selectedP ? (
+          <div className="mb-10">
+            <WeatherWidget
+              lat={selectedP.geoSirina}
+              lon={selectedP.geoDuzina}
+              fallbackAddress={null}
+            />
+          </div>
+        ) : (
+          <div className="mb-10 rounded-3xl border border-sky-200/40 bg-white/70 p-6 text-gray-700 shadow-sm backdrop-blur">
+            <div className="text-lg font-extrabold text-gray-900">Vremenska prognoza</div>
+            <p className="mt-1 text-sm text-gray-600">Prvo izaberi pčelinjak da bismo prikazali prognozu.</p>
+          </div>
+        )}
+
 
         {loading ? (
           <div className="rounded-2xl bg-white/70 p-6 text-gray-700">Učitavanje...</div>
@@ -319,4 +338,3 @@ export default function Page() {
     </main>
   );
 }
-

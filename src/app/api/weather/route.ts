@@ -24,18 +24,17 @@
  *         description: Greška pri dobavljanju vremenske prognoze
  */
 
-
 import { NextResponse } from "next/server";
 
 const API_KEY = process.env.OPENWEATHER_API_KEY;
 
 type Daily = {
-  date: string;      
-  label: string  
+  date: string;
+  label: string;
   min: number;
   max: number;
   desc: string;
-  icon: string;      
+  icon: string;
   willRain: boolean;
 };
 
@@ -49,12 +48,38 @@ function ymdFromDt(dtSeconds: number) {
 
 function weekdayLabel(dateYmd: string) {
   const d = new Date(dateYmd + "T12:00:00");
-  return d.toLocaleDateString("sr-RS", { weekday: "short" }); // npr "pon"
+  return d.toLocaleDateString("sr-RS", { weekday: "short" });
+}
+
+function toNum(v: string | null) {
+  if (v == null) return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+async function geocode(address: string) {
+  const geoRes = await fetch(
+    `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(address)}&limit=1&appid=${API_KEY}`,
+    { cache: "no-store" }
+  );
+
+  const geoData = await geoRes.json();
+  if (!Array.isArray(geoData) || geoData.length === 0) return null;
+
+  const { lat, lon, name, country, state } = geoData[0];
+  return {
+    lat: Number(lat),
+    lon: Number(lon),
+    city: [name, state, country].filter(Boolean).join(", "),
+  };
 }
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const address = searchParams.get("address")?.trim();
+
+  const latQ = toNum(searchParams.get("lat"));
+  const lonQ = toNum(searchParams.get("lon"));
+  const address = searchParams.get("address")?.trim() || "";
 
   if (!API_KEY) {
     return NextResponse.json(
@@ -63,31 +88,38 @@ export async function GET(req: Request) {
     );
   }
 
-  if (!address) {
-    return NextResponse.json(
-      { city: "", today: null, days: [], error: "Missing address" },
-      { status: 400 }
-    );
-  }
 
-  try {
-    
-    const geoRes = await fetch(
-      `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(address)}&limit=1&appid=${API_KEY}`,
-      { cache: "no-store" }
-    );
+  let lat: number | null = null;
+  let lon: number | null = null;
+  let city = "";
 
-    const geoData = await geoRes.json();
-    if (!Array.isArray(geoData) || geoData.length === 0) {
+  if (latQ != null && lonQ != null) {
+    lat = latQ;
+    lon = lonQ;
+    city = "Lokacija";
+  } else {
+  
+    if (!address) {
+      return NextResponse.json(
+        { city: "", today: null, days: [], error: "Missing lat/lon or address" },
+        { status: 400 }
+      );
+    }
+
+    const geo = await geocode(address);
+    if (!geo) {
       return NextResponse.json(
         { city: "", today: null, days: [], error: "Location not found" },
         { status: 404 }
       );
     }
 
-    const { lat, lon, name } = geoData[0];
+    lat = geo.lat;
+    lon = geo.lon;
+    city = geo.city;
+  }
 
-  
+  try {
     const weatherRes = await fetch(
       `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=metric&appid=${API_KEY}`,
       { cache: "no-store" }
@@ -97,10 +129,9 @@ export async function GET(req: Request) {
     const list: any[] = Array.isArray(weatherData?.list) ? weatherData.list : [];
 
     if (list.length === 0) {
-      return NextResponse.json({ city: name ?? "", today: null, days: [] });
+      return NextResponse.json({ city, today: null, days: [], error: "No forecast data" }, { status: 502 });
     }
 
-    
     const nowPoint = list[0];
     const today = {
       dt: Number(nowPoint.dt),
@@ -108,11 +139,10 @@ export async function GET(req: Request) {
       desc: String(nowPoint?.weather?.[0]?.description ?? ""),
       icon: String(nowPoint?.weather?.[0]?.icon ?? ""),
       willRain:
-        (Number(nowPoint?.rain?.["3h"] ?? 0) > 0) ||
-        (String(nowPoint?.weather?.[0]?.main ?? "").toLowerCase().includes("rain")),
+        Number(nowPoint?.rain?.["3h"] ?? 0) > 0 ||
+        String(nowPoint?.weather?.[0]?.main ?? "").toLowerCase().includes("rain"),
     };
 
-   
     const byDay = new Map<string, any[]>();
     for (const item of list) {
       const dayKey = ymdFromDt(Number(item.dt));
@@ -120,10 +150,7 @@ export async function GET(req: Request) {
       byDay.get(dayKey)!.push(item);
     }
 
-   
     const dayKeys = Array.from(byDay.keys()).sort();
-
-    
     const todayKey = ymdFromDt(today.dt);
     const nextKeys = dayKeys.filter((k) => k > todayKey).slice(0, 4);
 
@@ -134,7 +161,6 @@ export async function GET(req: Request) {
       let max = -Infinity;
       let willRain = false;
 
-      
       const midday =
         items.find((it) => new Date(Number(it.dt) * 1000).getHours() === 12) ??
         items[Math.floor(items.length / 2)];
@@ -163,12 +189,9 @@ export async function GET(req: Request) {
       };
     });
 
-    return NextResponse.json({
-      city: name ?? "",
-      today,
-      days,
-    });
-  } catch {
+    return NextResponse.json({ city, today, days });
+  } catch (e: any) {
+    console.error(e);
     return NextResponse.json(
       { city: "", today: null, days: [], error: "Weather error" },
       { status: 500 }

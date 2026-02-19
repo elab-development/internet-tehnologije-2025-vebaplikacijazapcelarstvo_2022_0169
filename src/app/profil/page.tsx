@@ -1,6 +1,7 @@
 "use client";
 
 import ProfilePanel from "@/components/ProfilePanel";
+import PcelinjaciMap from "@/components/PcelinjaciMap";
 
 export default function Page() {
     return (
@@ -23,6 +24,10 @@ export default function Page() {
                 </div>
 
                 <ProfilePanel />
+
+                <div className="mt-6">
+                    <PcelinjaciMap />
+                </div>
             </div>
         </main>
     );

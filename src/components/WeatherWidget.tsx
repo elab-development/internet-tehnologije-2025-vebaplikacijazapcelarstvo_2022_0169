@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Today = {
   dt: number;
@@ -12,7 +12,7 @@ type Today = {
 
 type Day = {
   date: string;
-  label: string; // pon/uto...
+  label: string;
   min: number;
   max: number;
   desc: string;
@@ -28,57 +28,93 @@ type WeatherResponse = {
 
 function fmtTime(dtSeconds: number) {
   const d = new Date(dtSeconds * 1000);
-  return d.toLocaleString("sr-RS", { hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
 }
 
 function iconUrl(icon: string) {
-  // 2x ikonica
   return `https://openweathermap.org/img/wn/${icon}@2x.png`;
 }
 
-export default function WeatherWidget({ address }: { address: string | null }) {
+export default function WeatherWidget({
+  lat,
+  lon,
+  fallbackAddress,
+}: {
+  lat: number | string | null;
+  lon: number | string | null;
+  fallbackAddress: string | null;
+}) {
   const [data, setData] = useState<WeatherResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const latN = lat == null ? null : Number(lat);
+  const lonN = lon == null ? null : Number(lon);
+  const hasCoords =
+    latN != null && lonN != null && Number.isFinite(latN) && Number.isFinite(lonN);
 
   useEffect(() => {
-    if (!address) {
+    const fb = (fallbackAddress ?? "").trim();
+
+    if (!hasCoords && !fb) {
       setData(null);
+      setErr(null);
+      setLoading(false);
       return;
     }
 
-    let cancelled = false;
+    const ctrl = new AbortController();
+    let alive = true;
 
     (async () => {
       setLoading(true);
+      setErr(null);
       try {
-        const res = await fetch(`/api/weather?address=${encodeURIComponent(address)}`, {
+        const qs = new URLSearchParams();
+        if (hasCoords) {
+          qs.set("lat", String(latN));
+          qs.set("lon", String(lonN));
+        } else {
+          qs.set("address", fb);
+        }
+
+        const res = await fetch(`/api/weather?${qs.toString()}`, {
           method: "GET",
+          signal: ctrl.signal,
         });
-        const out = await res.json();
-        if (!res.ok) throw new Error(out?.error || "Weather error");
-        if (!cancelled) setData(out);
-      } catch (e) {
+
+        const out = await res.json().catch(() => null);
+        if (!res.ok) throw new Error((out as any)?.error || "Weather error");
+        if (!alive) return;
+
+        setData(out);
+      } catch (e: any) {
+        if (e?.name === "AbortError") return;
         console.error(e);
-        if (!cancelled) setData(null);
+        if (alive) {
+          setData(null);
+          setErr(e?.message || "Prognoza nije dostupna.");
+        }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (alive) setLoading(false);
       }
     })();
 
     return () => {
-      cancelled = true;
+      alive = false;
+      ctrl.abort();
     };
-  }, [address]);
+  }, [hasCoords, latN, lonN, fallbackAddress]);
 
   const today = data?.today ?? null;
-  const days = Array.isArray(data?.days) ? data!.days : [];
+  const days = useMemo(() => (Array.isArray(data?.days) ? data!.days : []), [data]);
 
   return (
-    <section className="mb-6 overflow-hidden rounded-3xl border border-sky-200/40 bg-gradient-to-br from-sky-600 via-blue-600 to-indigo-700 p-6 text-white shadow-lg">
+    <section className="mt-6 overflow-hidden rounded-3xl border border-sky-200/40 bg-gradient-to-br from-sky-600 via-blue-600 to-indigo-700 p-6 text-white shadow-lg">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-extrabold">Vremenska prognoza</h2>
-          <p className="text-sm opacity-85">{data?.city || "Izaberi pčelinjak"}</p>
+          <p className="text-sm opacity-85">{data?.city || "Lokacija"}</p>
         </div>
 
         <div className="text-xs opacity-85">
@@ -86,38 +122,30 @@ export default function WeatherWidget({ address }: { address: string | null }) {
         </div>
       </div>
 
-      {!address ? (
-        <div className="mt-4 rounded-2xl bg-white/10 p-4 text-sm opacity-90">
-          Izaberi pčelinjak da bi se prikazala prognoza.
-        </div>
-      ) : loading ? (
+      {loading ? (
         <div className="mt-4 rounded-2xl bg-white/10 p-4 text-sm opacity-90">Učitavanje...</div>
+      ) : err ? (
+        <div className="mt-4 rounded-2xl bg-white/10 p-4 text-sm opacity-90">{err}</div>
       ) : !data || !today ? (
         <div className="mt-4 rounded-2xl bg-white/10 p-4 text-sm opacity-90">
           Prognoza nije dostupna.
         </div>
       ) : (
         <>
-          {/* DANAS */}
           <div className="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white/10 p-5 backdrop-blur">
             <div>
-              <div className="text-sm font-semibold opacity-90">Danas (sada • {fmtTime(today.dt)})</div>
+              <div className="text-sm font-semibold opacity-90">
+                Danas (sada • {fmtTime(today.dt)})
+              </div>
               <div className="mt-1 text-4xl font-extrabold">{Math.round(today.temp)}°C</div>
               <div className="mt-1 text-sm capitalize opacity-90">{today.desc}</div>
             </div>
 
-            <div className="flex items-center gap-3">
-              {today.icon ? (
-                <img
-                  src={iconUrl(today.icon)}
-                  alt={today.desc}
-                  className="h-14 w-14 drop-shadow"
-                />
-              ) : null}
-            </div>
+            {today.icon ? (
+              <img src={iconUrl(today.icon)} alt={today.desc} className="h-14 w-14 drop-shadow" />
+            ) : null}
           </div>
 
-          {/* NAREDNA 4 DANA */}
           <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">
             {days.slice(0, 4).map((d) => (
               <div key={d.date} className="rounded-2xl bg-white/10 p-4 text-center backdrop-blur">
@@ -125,11 +153,7 @@ export default function WeatherWidget({ address }: { address: string | null }) {
 
                 <div className="mx-auto mt-2 flex w-full items-center justify-center">
                   {d.icon ? (
-                    <img
-                      src={iconUrl(d.icon)}
-                      alt={d.desc}
-                      className="h-12 w-12 drop-shadow"
-                    />
+                    <img src={iconUrl(d.icon)} alt={d.desc} className="h-12 w-12 drop-shadow" />
                   ) : null}
                 </div>
 
@@ -139,9 +163,7 @@ export default function WeatherWidget({ address }: { address: string | null }) {
                   {Math.round(d.max)}° / <span className="opacity-80">{Math.round(d.min)}°</span>
                 </div>
 
-                <div className="mt-1 text-xs opacity-85">
-                  {d.willRain ? "🌧️ padavine" : "☀️ suvo"}
-                </div>
+                <div className="mt-1 text-xs opacity-85">{d.willRain ? "🌧️ padavine" : "☀️ suvo"}</div>
               </div>
             ))}
           </div>

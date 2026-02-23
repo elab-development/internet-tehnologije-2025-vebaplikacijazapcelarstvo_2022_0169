@@ -19,4 +19,8 @@ USER nodeuser
 COPY --from=builder /app ./
 
 EXPOSE 3000
+<<<<<<< HEAD
 CMD ["npm","run","start"]
+=======
+CMD ["sh","-c","npm run db:migrate && npm run db:seed && npm run start"]
+>>>>>>> 72c2120229922405b5721d0cb121ed00f8f44766

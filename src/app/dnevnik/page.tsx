@@ -5,6 +5,7 @@ import DnevnikSearch, { type DnevnikSort } from "@/components/DnevnikSearch";
 import WeatherWidget from "@/components/WeatherWidget";
 import ListaDnevnika, { type DnevnikItem } from "@/components/ListaDnevnika";
 import NewDnevnik, { type NewDnevnikForm } from "@/components/NewDnevnik";
+import IzvestajForm, { type IzvestajParams } from "@/components/IzvestajForm";
 
 type PcelinjakOpt = {
   id: string;
@@ -20,6 +21,33 @@ type ModalState =
   | { open: false }
   | { open: true; mode: "add" }
   | { open: true; mode: "edit"; editId: string };
+
+async function downloadPdf(params: IzvestajParams) {
+  const qs = new URLSearchParams();
+  qs.set("pcelinjakId", params.pcelinjakId);
+  qs.set("dateFrom", params.dateFrom);
+  qs.set("dateTo", params.dateTo);
+  if (params.kosnicaId) qs.set("kosnicaId", params.kosnicaId);
+
+  const res = await fetch(`/api/izvestaj/dnevnik?${qs.toString()}`, { method: "GET" });
+
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    throw new Error(txt || "Neuspešno generisanje PDF-a.");
+  }
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `izvestaj_dnevnik_${params.dateFrom}_${params.dateTo}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  URL.revokeObjectURL(url);
+}
 
 export default function Page() {
   const [loading, setLoading] = useState(true);
@@ -41,11 +69,13 @@ export default function Page() {
   const isEdit = modal.open && modal.mode === "edit";
   const editItem = isEdit ? dnevnici.find((d) => d.id === modal.editId) : undefined;
 
+  // ✅ NOVO: modal za izveštaj
+  const [reportOpen, setReportOpen] = useState(false);
+
   async function loadPcelinjaci() {
     const res = await fetch("/api/pcelinjaci");
     const data = await res.json();
     if (!res.ok) throw new Error(data?.error || "Greška pri učitavanju pčelinjaka");
-
 
     setPcelinjaci(
       (data ?? []).map((p: any) => ({
@@ -183,15 +213,15 @@ export default function Page() {
       const res =
         modal.mode === "add"
           ? await fetch("/api/dnevnici", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          })
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            })
           : await fetch(`/api/dnevnici/${(modal as any).editId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
 
       const out = await res.json();
       if (!res.ok) throw new Error(out?.error || "Greška");
@@ -216,6 +246,11 @@ export default function Page() {
       kosnicaId: editItem.kosnicaId,
     };
   }, [editItem]);
+
+  
+  function openReport() {
+    setReportOpen(true);
+  }
 
   return (
     <main
@@ -258,19 +293,12 @@ export default function Page() {
           onChangeKosnicaId={setKosnicaId}
           onChangeSort={setSort}
           onReset={resetFilters}
-          onDownload={() => {
-            console.log("Preuzmi dnevnik klik");
-          }}
+          onDownload={openReport}
         />
-
 
         {selectedP ? (
           <div className="mb-10">
-            <WeatherWidget
-              lat={selectedP.geoSirina}
-              lon={selectedP.geoDuzina}
-              fallbackAddress={null}
-            />
+            <WeatherWidget lat={selectedP.geoSirina} lon={selectedP.geoDuzina} fallbackAddress={null} />
           </div>
         ) : (
           <div className="mb-10 rounded-3xl border border-sky-200/40 bg-white/70 p-6 text-gray-700 shadow-sm backdrop-blur">
@@ -278,7 +306,6 @@ export default function Page() {
             <p className="mt-1 text-sm text-gray-600">Prvo izaberi pčelinjak da bismo prikazali prognozu.</p>
           </div>
         )}
-
 
         {loading ? (
           <div className="rounded-2xl bg-white/70 p-6 text-gray-700">Učitavanje...</div>
@@ -312,6 +339,7 @@ export default function Page() {
         )}
       </div>
 
+      
       {modal.open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={close} />
@@ -335,6 +363,19 @@ export default function Page() {
           </div>
         </div>
       )}
+
+      
+      <IzvestajForm
+        open={reportOpen}
+        pcelinjaci={pcelinjaci.map((p) => ({ id: p.id, naziv: p.naziv }))}
+        kosnice={kosnice}
+        initialPcelinjakId={pcelinjakId}
+        initialKosnicaId={kosnicaId}
+        onClose={() => setReportOpen(false)}
+        onSubmit={async (params) => {
+          await downloadPdf(params);
+        }}
+      />
     </main>
   );
 }

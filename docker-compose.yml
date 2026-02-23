@@ -1,33 +1,54 @@
 services:
   db:
     image: postgres:16
-    container_name: pcelarstvo-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: pcelarstvo
-    ports:
-      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d pcelarstvo" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   web:
     build: .
-    container_name: pcelarstvo-web
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "3000:3000"
     environment:
       DATABASE_URL: postgres://postgres:postgres@db:5432/pcelarstvo
       JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRES: ${JWT_EXPIRES}
-      RESEND_API_KEY: ${RESEND_API_KEY}
-      MAIL_FROM: ${MAIL_FROM}
-      OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY}
-      API_URL: http://localhost:3000
-      COOKIE_SECURE: "false"
-    command: sh -c "npm run db:migrate && npm run db:seed && npm run start"
+      API_URL: ${API_URL:-http://localhost:3000}
+      COOKIE_SECURE: ${COOKIE_SECURE:-"false"}
+    command: npm run start
+    restart: unless-stopped
+
+  migrate:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/pcelarstvo
+    command: npm run db:migrate
+    restart: "no"
+    profiles: [ "ops" ]
+
+  seed:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/pcelarstvo
+    command: npm run db:seed
+    restart: "no"
+    profiles: [ "ops" ]
 
 volumes:
   pgdata:

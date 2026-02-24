@@ -43,6 +43,13 @@
       "when": 1771193287246,
       "tag": "0005_magenta_black_widow",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1771891422863,
+      "tag": "0006_flaky_sersi",
+      "breakpoints": true
     }
   ]
 }
